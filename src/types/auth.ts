@@ -1,0 +1,48 @@
+// Forme réelle de GET /auth/me : c'est exactement ce que renvoie
+// AthletesService.findOne() (même forme que GET /athletes/:id), pas une vue
+// camelCase mappée comme les autres endpoints. Champs bruts Prisma.
+export interface AuthClub {
+  id: string;
+  nom: string;
+  pays: string | null;
+  ville: string | null;
+  created_at: string | null;
+  updated_at: string | null;
+}
+
+export interface AuthUser {
+  id: string;
+  email: string;
+  nom: string | null;
+  prenom: string | null;
+  langue: string | null;
+  created_at: string | null;
+  updated_at: string | null;
+}
+
+export interface AuthMeResponse {
+  id: string; // athlete.id — c'est la valeur utilisée pour tous les appels métier
+  user_id: string;
+  club_id: string | null;
+  categorie_age: string | null;
+  genre: string | null;
+  grade: string | null;
+  date_naissance: string | null;
+  niveau_sportif: string | null;
+  created_at: string | null;
+  updated_at: string | null;
+  club: AuthClub | null;
+  app_user: AuthUser;
+}
+
+export interface RegisterPayload {
+  email: string;
+  password: string;
+  nom: string;
+  prenom: string;
+}
+
+export interface LoginPayload {
+  email: string;
+  password: string;
+}
