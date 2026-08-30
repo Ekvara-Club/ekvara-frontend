@@ -21,6 +21,11 @@ export interface NextCompetitionResponse {
 // GET /competitions/:competitionId (fiche compétition) : vue mappée
 // camelCase dédiée, distincte de CompetitionSummary (qui n'expose pas
 // organisateur/sourceExternalId/saison, inutiles aux vues participation-scoped).
+export interface CompetitionSourceRef {
+  source: string;
+  sourceUrl: string | null;
+}
+
 export interface CompetitionDetail {
   id: string;
   nom: string;
@@ -34,6 +39,10 @@ export interface CompetitionDetail {
   pays: string | null;
   niveau: string | null;
   saison: string | null;
+  // Ticket "Compétitions Athlete V2" §20 : liste complète des sources
+  // (nom + lien externe si connu) — source/sourceExternalId ci-dessus
+  // restent la source primaire historique, jamais retirés.
+  sources: CompetitionSourceRef[];
 }
 
 // GET /competitions (catalogue global, pas scopé athlète) : réponse vérifiée
@@ -55,3 +64,15 @@ export interface CompetitionCatalogItem {
   created_at: string;
   updated_at: string;
 }
+
+// GET /competitions?page=&limit=(&scope=&search=) (ticket "Compétitions
+// Athlete V2" §8) : forme distincte du tableau brut ci-dessus retourné par
+// getCompetitionCatalog() sans ces paramètres — jamais confondues.
+export interface PaginatedCompetitions {
+  items: CompetitionCatalogItem[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export type CompetitionCatalogScope = 'upcoming' | 'past';

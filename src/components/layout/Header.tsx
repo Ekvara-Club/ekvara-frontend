@@ -12,6 +12,7 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   { label: 'Accueil', href: '/' },
   { label: 'Activité', href: '/activite' },
+  { label: 'Compétitions', href: '/competitions' },
   { label: 'Exercices', href: '/exercices' },
 ];
 
@@ -73,7 +74,11 @@ function Header() {
           EKVARA
         </span>
 
-        <nav className="order-3 flex w-full items-center justify-center gap-6 sm:order-2 sm:w-auto">
+        {/* flex-wrap + gap-x-4/gap-y-1 (ticket "Compétitions Athlete V2" §3/§33) :
+            un 4e item ("Compétitions") allonge la nav — plutôt que de risquer
+            un débordement/troncature sur 390px, la nav peut se replier sur
+            deux lignes centrées sans jamais couper un libellé. */}
+        <nav className="order-3 flex w-full flex-wrap items-center justify-center gap-x-4 gap-y-1 sm:order-2 sm:w-auto sm:flex-nowrap sm:gap-6">
           {NAV_ITEMS.map((item) => {
             const isActive = pathname === item.href;
             return (

@@ -9,6 +9,7 @@ import WeightPage from './pages/WeightPage';
 import GoalsPage from './pages/GoalsPage';
 import ProgressPage from './pages/ProgressPage';
 import CompetitionPage from './pages/CompetitionPage';
+import CompetitionsPage from './pages/CompetitionsPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 
@@ -73,6 +74,10 @@ function AppRoutes() {
 
   if (pathname === '/progression') {
     return <ProgressPage />;
+  }
+
+  if (pathname === '/competitions') {
+    return <CompetitionsPage />;
   }
 
   const competitionMatch = pathname.match(/^\/competitions\/([^/]+)$/);

@@ -1,4 +1,10 @@
-import type { CompetitionCatalogItem, CompetitionDetail, NextCompetitionResponse } from '../types/competition';
+import type {
+  CompetitionCatalogItem,
+  CompetitionCatalogScope,
+  CompetitionDetail,
+  NextCompetitionResponse,
+  PaginatedCompetitions,
+} from '../types/competition';
 import type { CompetitionEntriesResponse } from '../types/competition-entries';
 import type { CreateWeightLogPayload, WeightLog, WeightSummaryResponse } from '../types/weight';
 import type { ActiveGoalResponse, Goal, GoalStatus, GoalStep } from '../types/goal';
@@ -276,6 +282,29 @@ export async function getCompetitionCatalog(): Promise<CompetitionCatalogItem[]>
   }
 
   const data: CompetitionCatalogItem[] = await response.json();
+  return data;
+}
+
+// Ticket "Compétitions Athlete V2" §6/§8 : recherche + pagination réelles
+// pour l'explorateur — jamais appelé par AddCompetitionModal (qui continue
+// d'utiliser getCompetitionCatalog() ci-dessus, comportement inchangé).
+export async function getCompetitionCatalogPaginated(params: {
+  page: number;
+  limit: number;
+  scope?: CompetitionCatalogScope;
+  search?: string;
+}): Promise<PaginatedCompetitions> {
+  const query = new URLSearchParams({ page: String(params.page), limit: String(params.limit) });
+  if (params.scope) query.set('scope', params.scope);
+  if (params.search) query.set('search', params.search);
+
+  const response = await apiFetch(`/competitions?${query.toString()}`);
+
+  if (!response.ok) {
+    throw new Error(`Impossible de récupérer le catalogue des compétitions (${response.status})`);
+  }
+
+  const data: PaginatedCompetitions = await response.json();
   return data;
 }
 

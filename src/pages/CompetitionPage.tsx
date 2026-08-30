@@ -94,6 +94,48 @@ function isCompetitionPast(competition: CompetitionDetail): boolean {
   return referenceDate < startOfToday;
 }
 
+const SOURCE_LABELS: Record<string, string> = {
+  fftda: 'FFTDA',
+  world_taekwondo: 'World Taekwondo',
+  martial_events: 'Martial Events',
+};
+
+function formatSourceLabel(source: string): string {
+  return SOURCE_LABELS[source] ?? capitalizeFirst(source.replace(/_/g, ' '));
+}
+
+// Ticket "Compétitions Athlete V2" §20-21 : une seule fiche par compétition
+// canonique, jamais une ligne par source — juste la liste des sources ayant
+// contribué, avec lien externe si connu. Aucun id technique affiché.
+function SourcesSection({ sources }: { sources: CompetitionDetail['sources'] }) {
+  if (sources.length === 0) return null;
+
+  return (
+    <section className="mt-10 border-t border-gray-200 pt-8">
+      <SectionLabel>Sources des données</SectionLabel>
+      <ul className="mt-4 flex flex-col gap-2">
+        {sources.map((entry) => (
+          <li key={entry.source} className="text-sm text-ekvara-black">
+            {entry.sourceUrl ? (
+              <a
+                href={entry.sourceUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-medium text-ekvara-black underline decoration-ekvara-black/30 underline-offset-2 hover:decoration-ekvara-black"
+              >
+                {formatSourceLabel(entry.source)}
+                <span className="sr-only"> (ouvre un site externe dans un nouvel onglet)</span>
+              </a>
+            ) : (
+              <span className="font-medium">{formatSourceLabel(entry.source)}</span>
+            )}
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
 // Section éditoriale (§11-17) : distingue les 3 états métier existants —
 // future (résultat pas encore disponible), passée avec résultat (le
 // classement devient l'information dominante), passée sans résultat. Aucune
@@ -406,6 +448,8 @@ function CompetitionPage({ competitionId }: CompetitionPageProps) {
                 {resultSection}
               </>
             )}
+
+            <SourcesSection sources={competition.sources} />
           </>
         )}
       </main>
