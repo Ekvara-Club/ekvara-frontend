@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { handleNavClick } from '../../utils/navigation';
+import NotificationBell from './NotificationBell';
 
 const PASSPORT_HREF = '/passeport';
 
@@ -99,74 +100,78 @@ function Header() {
           })}
         </nav>
 
-        <div className="relative order-2 sm:order-3">
-          <button
-            type="button"
-            onClick={() => setIsMenuOpen((open) => !open)}
-            aria-label="Profil utilisateur"
-            aria-haspopup="true"
-            aria-expanded={isMenuOpen}
-            className={`flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-ekvara-black text-sm font-semibold text-ekvara-surface transition-shadow ${
-              isMenuOpen ? 'ring-2 ring-ekvara-black/20 ring-offset-2 ring-offset-ekvara-surface' : ''
-            }`}
-          >
-            {initial}
-          </button>
+        <div className="order-2 flex items-center gap-1 sm:order-3">
+          <NotificationBell />
 
-          {isMenuOpen && (
-            <>
-              <div className="fixed inset-0 z-40" onClick={() => setIsMenuOpen(false)} />
-              <div
-                role="menu"
-                className="absolute right-0 z-50 mt-2 w-56 rounded-md border border-gray-200 bg-ekvara-surface py-2 shadow-sm"
-              >
-                {identityLabel && (
-                  <div className="px-3 py-2.5">
-                    <p className="font-display text-sm font-bold text-ekvara-black">{identityLabel}</p>
-                    {fullName && user?.email && (
-                      <p className="mt-0.5 truncate text-xs text-ekvara-muted">{user.email}</p>
-                    )}
-                  </div>
-                )}
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setIsMenuOpen((open) => !open)}
+              aria-label="Profil utilisateur"
+              aria-haspopup="true"
+              aria-expanded={isMenuOpen}
+              className={`flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-ekvara-black text-sm font-semibold text-ekvara-surface transition-shadow ${
+                isMenuOpen ? 'ring-2 ring-ekvara-black/20 ring-offset-2 ring-offset-ekvara-surface' : ''
+              }`}
+            >
+              {initial}
+            </button>
 
-                <div className="border-t border-gray-100" />
-
-                <a
-                  href={PASSPORT_HREF}
-                  onClick={(event) => closeAndNavigate(event, PASSPORT_HREF)}
-                  role="menuitem"
-                  className="block px-3 py-2 text-sm text-ekvara-black hover:bg-gray-50"
+            {isMenuOpen && (
+              <>
+                <div className="fixed inset-0 z-40" onClick={() => setIsMenuOpen(false)} />
+                <div
+                  role="menu"
+                  className="absolute right-0 z-50 mt-2 w-56 rounded-md border border-gray-200 bg-ekvara-surface py-2 shadow-sm"
                 >
-                  Mon passeport sportif →
-                </a>
+                  {identityLabel && (
+                    <div className="px-3 py-2.5">
+                      <p className="font-display text-sm font-bold text-ekvara-black">{identityLabel}</p>
+                      {fullName && user?.email && (
+                        <p className="mt-0.5 truncate text-xs text-ekvara-muted">{user.email}</p>
+                      )}
+                    </div>
+                  )}
 
-                <div className="border-t border-gray-100" />
+                  <div className="border-t border-gray-100" />
 
-                {SECONDARY_NAV_ITEMS.map((item) => (
                   <a
-                    key={item.href}
-                    href={item.href}
-                    onClick={(event) => closeAndNavigate(event, item.href)}
+                    href={PASSPORT_HREF}
+                    onClick={(event) => closeAndNavigate(event, PASSPORT_HREF)}
                     role="menuitem"
-                    className="block px-3 py-2 text-sm text-ekvara-black/80 hover:bg-gray-50 hover:text-ekvara-black"
+                    className="block px-3 py-2 text-sm text-ekvara-black hover:bg-gray-50"
                   >
-                    {item.label}
+                    Mon passeport sportif →
                   </a>
-                ))}
 
-                <div className="border-t border-gray-100" />
+                  <div className="border-t border-gray-100" />
 
-                <button
-                  type="button"
-                  onClick={handleLogout}
-                  role="menuitem"
-                  className="block w-full px-3 py-2 text-left text-sm text-ekvara-black hover:bg-gray-50"
-                >
-                  Déconnexion
-                </button>
-              </div>
-            </>
-          )}
+                  {SECONDARY_NAV_ITEMS.map((item) => (
+                    <a
+                      key={item.href}
+                      href={item.href}
+                      onClick={(event) => closeAndNavigate(event, item.href)}
+                      role="menuitem"
+                      className="block px-3 py-2 text-sm text-ekvara-black/80 hover:bg-gray-50 hover:text-ekvara-black"
+                    >
+                      {item.label}
+                    </a>
+                  ))}
+
+                  <div className="border-t border-gray-100" />
+
+                  <button
+                    type="button"
+                    onClick={handleLogout}
+                    role="menuitem"
+                    className="block w-full px-3 py-2 text-left text-sm text-ekvara-black hover:bg-gray-50"
+                  >
+                    Déconnexion
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
         </div>
       </div>
     </header>
