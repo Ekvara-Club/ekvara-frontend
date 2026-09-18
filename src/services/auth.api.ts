@@ -1,4 +1,9 @@
-import type { AuthMeResponse, LoginPayload, RegisterPayload } from '../types/auth';
+import type {
+  AuthMeResponse,
+  LoginPayload,
+  RegisterPayload,
+  ValidateInvitationResult,
+} from '../types/auth';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -23,6 +28,25 @@ export async function register(payload: RegisterPayload): Promise<AuthMeResponse
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    throw new Error(await extractErrorMessage(response));
+  }
+
+  return response.json();
+}
+
+// Les messages d'erreur backend (code invalide/expiré/utilisé/révoqué) sont
+// déjà le texte final destiné à l'athlète (voir InvitationsService côté
+// backend) : contrairement à d'autres endpoints, pas besoin de les remapper
+// ici par code HTTP, `err.message` peut être affiché tel quel.
+export async function validateInvitationCode(code: string): Promise<ValidateInvitationResult> {
+  const response = await fetch(`${API_URL}/auth/invitations/validate`, {
+    ...AUTH_FETCH_OPTIONS,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ code }),
   });
 
   if (!response.ok) {

@@ -36,6 +36,7 @@ export interface AuthMeResponse {
 }
 
 export interface RegisterPayload {
+  invitationCode: string;
   email: string;
   password: string;
   nom: string;
@@ -45,4 +46,14 @@ export interface RegisterPayload {
 export interface LoginPayload {
   email: string;
   password: string;
+}
+
+// Forme de POST /auth/invitations/validate : uniquement ce qui est
+// nécessaire pour afficher "Tu as été invité à rejoindre <club>" — jamais de
+// coachId, clubId brut ou autre métadonnée interne (voir backend
+// InvitationsService.validate).
+export interface ValidateInvitationResult {
+  valid: true;
+  club: { name: string };
+  expiresAt: string;
 }
