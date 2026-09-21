@@ -2,13 +2,19 @@ import { useEffect, useState } from 'react';
 import Header from '../components/layout/Header';
 import CompetitionResultModal from '../components/passport/CompetitionResultModal';
 import CompetitionEntriesSection from '../components/competition/CompetitionEntriesSection';
+import CoachPreparationSection from '../components/competition/CoachPreparationSection';
 import Button from '../components/ui/Button';
 import SectionLabel from '../components/ui/SectionLabel';
 import StatValue from '../components/ui/StatValue';
 import { useAuth } from '../contexts/AuthContext';
-import { COMPETITION_NOT_FOUND_MESSAGE, getCompetitionById, getCompetitions } from '../services/athletes.api';
+import {
+  COMPETITION_NOT_FOUND_MESSAGE,
+  getCoachPreparations,
+  getCompetitionById,
+  getCompetitions,
+} from '../services/athletes.api';
 import { hasCompetitionResult, isPastParticipation, isPodium } from '../utils/participationStats';
-import type { CompetitionDetail } from '../types/competition';
+import type { CoachPreparationItem, CompetitionDetail } from '../types/competition';
 import type { ParticipationListItem } from '../types/activity';
 
 function capitalizeFirst(value: string): string {
@@ -227,6 +233,11 @@ function CompetitionPage({ competitionId }: CompetitionPageProps) {
   const [participationsLoading, setParticipationsLoading] = useState(true);
   const [participationsError, setParticipationsError] = useState<string | null>(null);
 
+  // Préparation coach (vue Athlete-safe) : enrichit la fiche mais ne doit
+  // jamais la casser — une erreur laisse simplement la fiche sans ce bloc.
+  const [preparations, setPreparations] = useState<CoachPreparationItem[]>([]);
+  const [preparationsLoading, setPreparationsLoading] = useState(true);
+
   const [resultModalOpen, setResultModalOpen] = useState(false);
 
   useEffect(() => {
@@ -290,9 +301,38 @@ function CompetitionPage({ competitionId }: CompetitionPageProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [athleteId]);
 
+  useEffect(() => {
+    let cancelled = false;
+    getCoachPreparations(athleteId)
+      .then((data) => {
+        if (!cancelled) setPreparations(data);
+      })
+      .catch((error: Error) => {
+        console.error('Erreur lors du chargement des préparations coach', error);
+      })
+      .finally(() => {
+        if (!cancelled) setPreparationsLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [athleteId]);
+
+  const myPreparation = preparations.find((p) => p.competitionId === competitionId) ?? null;
+
   // Dérivée d'une liste déjà scopée à l'athlète courant : jamais un nouvel
   // endpoint GET /athletes/:athleteId/competitions/:competitionId pour ça.
   const myParticipation = participations.find((p) => p.competition.id === competitionId) ?? null;
+
+  const participationsLoaded = !participationsLoading && !participationsError;
+
+  // Sans participation mais avec préparation coach, le bloc "Inscription
+  // officielle — Non confirmée" (CoachPreparationSection) remplace le message
+  // "pas ajoutée à ton planning", qui serait faux : le coach a bien prévu la
+  // compétition. Pendant que les préparations chargent, on n'affiche pas ce
+  // message non plus (pas de faux négatif qui se corrigerait après coup).
+  const showParticipationSection =
+    !participationsLoaded || myParticipation !== null || (!myPreparation && !preparationsLoading);
 
   // Mini profil de participation (§8/§9) : chaque cellule n'existe que si la
   // donnée réelle est présente — jamais de cellule vide ni de valeur inventée
@@ -396,35 +436,44 @@ function CompetitionPage({ competitionId }: CompetitionPageProps) {
               )}
             </div>
 
-            <section className="mt-10">
-              <SectionLabel>Ma participation</SectionLabel>
+            {myPreparation && (
+              <CoachPreparationSection
+                preparation={myPreparation}
+                showUnconfirmedRegistration={participationsLoaded && !myParticipation}
+              />
+            )}
 
-              {participationsLoading && <p className="mt-4 text-sm text-ekvara-muted">Chargement...</p>}
+            {showParticipationSection && (
+              <section className="mt-10">
+                <SectionLabel>Ma participation</SectionLabel>
 
-              {!participationsLoading && participationsError && (
-                <p className="mt-4 text-sm text-red-600">Impossible de charger ta participation.</p>
-              )}
+                {participationsLoading && <p className="mt-4 text-sm text-ekvara-muted">Chargement...</p>}
 
-              {!participationsLoading && !participationsError && !myParticipation && (
-                <p className="mt-4 text-sm text-ekvara-muted">
-                  Cette compétition n'est pas ajoutée à ton planning.
-                </p>
-              )}
+                {!participationsLoading && participationsError && (
+                  <p className="mt-4 text-sm text-red-600">Impossible de charger ta participation.</p>
+                )}
 
-              {!participationsLoading && !participationsError && myParticipation && participationCells.length > 0 && (
-                <div className="mt-4 grid grid-cols-1 gap-y-4 sm:grid-cols-3 sm:gap-y-0 sm:divide-x sm:divide-gray-200">
-                  {participationCells.map((cell) => (
-                    <StatValue
-                      key={cell.label}
-                      value={cell.value}
-                      label={cell.label}
-                      size="md"
-                      className="uppercase sm:px-6 sm:first:pl-0"
-                    />
-                  ))}
-                </div>
-              )}
-            </section>
+                {!participationsLoading && !participationsError && !myParticipation && (
+                  <p className="mt-4 text-sm text-ekvara-muted">
+                    Cette compétition n'est pas ajoutée à ton planning.
+                  </p>
+                )}
+
+                {!participationsLoading && !participationsError && myParticipation && participationCells.length > 0 && (
+                  <div className="mt-4 grid grid-cols-1 gap-y-4 sm:grid-cols-3 sm:gap-y-0 sm:divide-x sm:divide-gray-200">
+                    {participationCells.map((cell) => (
+                      <StatValue
+                        key={cell.label}
+                        value={cell.value}
+                        label={cell.label}
+                        size="md"
+                        className="uppercase sm:px-6 sm:first:pl-0"
+                      />
+                    ))}
+                  </div>
+                )}
+              </section>
+            )}
 
             {/* Ordre §7 : pour une compétition future, Inscrits prime sur
                 Résultat (résultat pas encore disponible) ; pour une

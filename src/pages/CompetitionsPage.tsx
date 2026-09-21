@@ -4,12 +4,13 @@ import CompetitionListRow from '../components/activity/CompetitionListRow';
 import SectionLabel from '../components/ui/SectionLabel';
 import Button from '../components/ui/Button';
 import { useAuth } from '../contexts/AuthContext';
-import { getCompetitions, getCompetitionCatalogPaginated } from '../services/athletes.api';
+import { getCoachPreparations, getCompetitions, getCompetitionCatalogPaginated } from '../services/athletes.api';
 import { navigateTo } from '../utils/navigation';
+import { buildMyUpcomingCompetitions } from '../utils/coachPreparation';
+import type { MyCompetitionRow } from '../utils/coachPreparation';
 import type { ParticipationListItem } from '../types/activity';
-import type { CompetitionCatalogItem, CompetitionCatalogScope } from '../types/competition';
+import type { CoachPreparationItem, CompetitionCatalogItem, CompetitionCatalogScope } from '../types/competition';
 
-const EXCLUDED_PARTICIPATION_STATUSES = ['annule', 'retire'];
 const PAGE_SIZE = 20;
 const SEARCH_DEBOUNCE_MS = 300;
 
@@ -39,10 +40,13 @@ function capitalizeFirst(value: string): string {
 
 // "Mes compétitions" (§4-5) : lieu + catégorie personnelle, jamais confondu
 // avec les métadonnées catalogue (niveau) affichées dans "À venir"/"Passées".
-function formatMyCompetitionMeta(p: ParticipationListItem): string | null {
-  const location = [p.competition.ville, p.competition.pays].filter(Boolean).join(', ');
-  const category = [p.categorieAge, p.categoriePoids].filter(Boolean).join(' · ');
-  return [location, category].filter(Boolean).join(' · ') || null;
+// Une compétition simplement préparée par le coach est signalée comme telle
+// (jamais présentée comme une inscription).
+function formatMyCompetitionMeta(row: MyCompetitionRow): string | null {
+  const location = [row.competition.ville, row.competition.pays].filter(Boolean).join(', ');
+  const category = [row.categorieAge, row.categoriePoids].filter(Boolean).join(' · ');
+  const plannedByCoach = row.source === 'coach_preparation' ? 'Prévue par ton coach' : null;
+  return [location, category, plannedByCoach].filter(Boolean).join(' · ') || null;
 }
 
 function formatCatalogMeta(item: CompetitionCatalogItem): string | null {
@@ -166,15 +170,27 @@ function CompetitionsPage() {
   const { athlete } = useAuth();
   const athleteId = athlete!.id;
 
-  const [myCompetitions, setMyCompetitions] = useState<ParticipationListItem[]>([]);
+  const [myParticipations, setMyParticipations] = useState<ParticipationListItem[]>([]);
+  const [myPreparations, setMyPreparations] = useState<CoachPreparationItem[]>([]);
   const [myCompetitionsLoading, setMyCompetitionsLoading] = useState(true);
   const [myCompetitionsError, setMyCompetitionsError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
-    getCompetitions(athleteId)
-      .then((data) => {
-        if (!cancelled) setMyCompetitions(data);
+    // Les préparations coach enrichissent "Mes compétitions" mais ne doivent
+    // jamais la faire échouer : si elles sont indisponibles, les participations
+    // restent affichées telles quelles.
+    Promise.all([
+      getCompetitions(athleteId),
+      getCoachPreparations(athleteId).catch((error: Error) => {
+        console.error('Erreur lors du chargement des préparations coach', error);
+        return [] as CoachPreparationItem[];
+      }),
+    ])
+      .then(([participations, preparations]) => {
+        if (cancelled) return;
+        setMyParticipations(participations);
+        setMyPreparations(preparations);
       })
       .catch((error: Error) => {
         if (!cancelled) {
@@ -192,12 +208,9 @@ function CompetitionsPage() {
 
   // Teaser volontairement limité aux échéances à venir (§4) : le suivi complet
   // upcoming+past des participations personnelles vit déjà sur /activite,
-  // jamais dupliqué ici.
-  const today = startOfToday();
-  const myUpcoming = myCompetitions
-    .filter((p) => !EXCLUDED_PARTICIPATION_STATUSES.includes(p.statut))
-    .filter((p) => parseDateOnly(p.competition.dateDebut) >= today)
-    .sort((a, b) => a.competition.dateDebut.localeCompare(b.competition.dateDebut));
+  // jamais dupliqué ici. Participations actives + compétitions préparées par
+  // le coach, sans doublon par compétition (voir buildMyUpcomingCompetitions).
+  const myUpcoming = buildMyUpcomingCompetitions(myParticipations, myPreparations, startOfToday());
 
   // Recherche catalogue (§6) : debounce, jamais un filtrage client sur des
   // centaines de lignes — chaque frappe finit par déclencher une nouvelle
@@ -260,14 +273,14 @@ function CompetitionsPage() {
 
             {!myCompetitionsLoading && !myCompetitionsError && myUpcoming.length > 0 && (
               <ul className="mt-4 divide-y divide-gray-100">
-                {myUpcoming.map((p) => (
+                {myUpcoming.map((row) => (
                   <CompetitionListRow
-                    key={p.id}
-                    dateDebut={p.competition.dateDebut}
-                    nom={p.competition.nom}
-                    metaLine={formatMyCompetitionMeta(p)}
-                    rightLabel={getDaysUntilLabel(p.competition.dateDebut)}
-                    onClick={() => navigateTo(`/competitions/${p.competition.id}`)}
+                    key={row.key}
+                    dateDebut={row.competition.dateDebut}
+                    nom={row.competition.nom}
+                    metaLine={formatMyCompetitionMeta(row)}
+                    rightLabel={getDaysUntilLabel(row.competition.dateDebut)}
+                    onClick={() => navigateTo(`/competitions/${row.competition.id}`)}
                   />
                 ))}
               </ul>

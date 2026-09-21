@@ -2,6 +2,7 @@ import { navigateTo } from '../../utils/navigation';
 import Button from '../ui/Button';
 import SectionLabel from '../ui/SectionLabel';
 import type { NextCompetitionResponse } from '../../types/competition';
+import { formatPreparationStatus } from '../../utils/coachPreparation';
 
 interface CompetitionCardProps {
   competition: NextCompetitionResponse | null;
@@ -45,10 +46,28 @@ function capitalizeFirst(value: string): string {
 // que d'imposer un grand aplat noir à un message neutre ou une erreur.
 function CompetitionCard({ competition, loading, error }: CompetitionCardProps) {
   if (!loading && !error && competition) {
-    const { competition: comp, statut, categorieAge, categoriePoids } = competition;
-    const registration = [capitalizeFirst(statut), categorieAge, categoriePoids]
-      .filter(Boolean)
-      .join(' · ');
+    const { competition: comp, source, statut, categorieAge, categoriePoids, preparation } = competition;
+    const plannedByCoach = source === 'coach_preparation';
+
+    // Inscription officielle (participation) : statut réel + catégories
+    // officielles, la catégorie prévue par le coach ne servant que de repli.
+    // Préparation coach seule : jamais de statut d'inscription (pas de
+    // "Inscrit") — uniquement le statut de préparation et les catégories prévues.
+    const registration = plannedByCoach
+      ? [
+          preparation ? formatPreparationStatus(preparation.status) : null,
+          preparation?.categorieAgePrevue,
+          preparation?.categoriePoidsPrevue,
+        ]
+          .filter(Boolean)
+          .join(' · ')
+      : [
+          statut ? capitalizeFirst(statut) : null,
+          categorieAge ?? preparation?.categorieAgePrevue,
+          categoriePoids ?? preparation?.categoriePoidsPrevue,
+        ]
+          .filter(Boolean)
+          .join(' · ');
 
     return (
       <div className="flex min-h-[240px] flex-col justify-between rounded-lg bg-ekvara-black p-6 sm:p-7">
@@ -72,7 +91,17 @@ function CompetitionCard({ competition, loading, error }: CompetitionCardProps) 
             {comp.niveau && <p className="capitalize">{comp.niveau}</p>}
           </div>
 
-          {registration && <p className="mt-4 text-sm text-white/70">{registration}</p>}
+          {plannedByCoach && (
+            <p className="mt-4">
+              <span className="inline-block rounded-full border border-white/20 px-2.5 py-0.5 text-xs font-semibold text-white/70">
+                Prévue par ton coach
+              </span>
+            </p>
+          )}
+
+          {registration && (
+            <p className={`${plannedByCoach ? 'mt-2' : 'mt-4'} text-sm text-white/70`}>{registration}</p>
+          )}
         </div>
 
         <div className="mt-6 border-t border-white/10 pt-4">

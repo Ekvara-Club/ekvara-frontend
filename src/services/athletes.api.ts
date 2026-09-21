@@ -1,6 +1,7 @@
 import type {
   CompetitionCatalogItem,
   CompetitionCatalogScope,
+  CoachPreparationItem,
   CompetitionDetail,
   NextCompetitionResponse,
   PaginatedCompetitions,
@@ -253,6 +254,20 @@ export async function getCompetitions(athleteId: string): Promise<ParticipationL
   }
 
   const data: ParticipationListItem[] = await response.json();
+  return data;
+}
+
+// Préparations coach visibles par l'athlète (vue Athlete-safe). Distinct de
+// getCompetitions() qui reste PARTICIPATION-ONLY : palmarès, stats et
+// activité ne doivent jamais recevoir une préparation comme une participation.
+export async function getCoachPreparations(athleteId: string): Promise<CoachPreparationItem[]> {
+  const response = await apiFetch(`/athletes/${athleteId}/competitions/preparations`);
+
+  if (!response.ok) {
+    throw new Error(`Impossible de récupérer les préparations (${response.status})`);
+  }
+
+  const data: CoachPreparationItem[] = await response.json();
   return data;
 }
 

@@ -10,12 +10,40 @@ export interface CompetitionSummary {
   source: string | null;
 }
 
+// Statuts internes de préparation coach (PREPARATION_STATUSES côté backend) :
+// vocabulaire distinct de participation.statut (inscription officielle).
+export type CoachPreparationStatus = 'envisage' | 'selectionne' | 'pret' | 'forfait';
+
+// Sous-ensemble Athlete-safe d'une préparation coach : jamais de note_coach,
+// d'objectif ni d'identité de coach (le backend ne les envoie pas).
+export interface CoachPreparationSummary {
+  status: string;
+  categorieAgePrevue: string | null;
+  categoriePoidsPrevue: string | null;
+}
+
+// GET /athletes/:athleteId/competitions/preparations : préparation coach
+// (PAS une participation), une entrée par compétition même si plusieurs coachs.
+export interface CoachPreparationItem extends CoachPreparationSummary {
+  competitionId: string;
+  source: 'coach_preparation';
+  competition: CompetitionSummary;
+}
+
+// GET /athletes/:athleteId/competitions/next : soit une participation
+// officielle ("participation"), soit une simple préparation coach
+// ("coach_preparation" — participationId/statut/catégories officiels sont alors
+// null : ne JAMAIS afficher "Inscrit"). Sur une participation, `preparation`
+// n'est qu'un enrichissement (catégories prévues) : catégoriePoids/categorieAge
+// restent les valeurs officielles.
 export interface NextCompetitionResponse {
-  participationId: string;
-  statut: string;
+  source: 'participation' | 'coach_preparation';
+  participationId: string | null;
+  statut: string | null;
   categoriePoids: string | null;
   categorieAge: string | null;
   competition: CompetitionSummary;
+  preparation: CoachPreparationSummary | null;
 }
 
 // GET /competitions/:competitionId (fiche compétition) : vue mappée
