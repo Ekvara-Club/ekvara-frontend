@@ -17,20 +17,7 @@ import type {
   UpdateParticipationResultPayload,
 } from '../types/activity';
 import type { MetricMeasurement, MetricsOverviewResponse } from '../types/metrics-overview';
-import { notifyUnauthorized } from './session';
-
-const API_URL = import.meta.env.VITE_API_URL;
-
-// Toutes les requêtes métier passent par ici : `credentials: 'include'`
-// systématique (le JWT vit dans un cookie HttpOnly, jamais lu en JS), et un
-// 401 est signalé une seule fois à AuthContext plutôt que dans chaque appelant.
-async function apiFetch(path: string, init?: RequestInit): Promise<Response> {
-  const response = await fetch(`${API_URL}${path}`, { ...init, credentials: 'include' });
-  if (response.status === 401) {
-    notifyUnauthorized();
-  }
-  return response;
-}
+import { apiFetch } from './apiClient';
 
 // Exporté pour que l'appelant distingue ce message (sûr à afficher tel quel)
 // de tout autre message d'erreur (réseau, 500...), qui doit rester générique.

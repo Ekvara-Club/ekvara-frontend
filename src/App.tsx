@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { consumeReturnTo, rememberReturnTo } from './services/session';
 import { navigateTo } from './utils/navigation';
 import HomePage from './pages/HomePage';
 import ActivityPage from './pages/ActivityPage';
@@ -26,17 +27,19 @@ function AppRoutes() {
   }, []);
 
   // Garde de routes : non connecté -> seuls /login et /register sont
-  // accessibles ; connecté -> /login et /register renvoient vers l'accueil.
+  // accessibles ; connecté -> /login et /register renvoient vers l'accueil (ou
+  // vers la page qui était demandée avant la perte de session).
   useEffect(() => {
     if (loading) return;
 
     if (!user && !PUBLIC_PATHS.includes(pathname)) {
+      rememberReturnTo(pathname);
       navigateTo('/login', 'replace');
       return;
     }
 
     if (user && PUBLIC_PATHS.includes(pathname)) {
-      navigateTo('/', 'replace');
+      navigateTo(consumeReturnTo() ?? '/', 'replace');
     }
   }, [user, loading, pathname]);
 
@@ -52,6 +55,13 @@ function AppRoutes() {
     return pathname === '/register' ? <RegisterPage /> : <LoginPage />;
   }
 
+  // key = id de l'athlète courant : si la session est remplacée par un autre
+  // compte, toutes les pages sont remontées et ne gardent aucune donnée de
+  // l'ancien (sans jamais recharger la fenêtre).
+  return <ProtectedRoutes key={user.id} pathname={pathname} />;
+}
+
+function ProtectedRoutes({ pathname }: { pathname: string }) {
   if (pathname === '/activite') {
     return <ActivityPage />;
   }

@@ -1,17 +1,5 @@
 import type { NotificationItem, PaginatedNotifications, UnreadCountResponse } from '../types/notification';
-import { notifyUnauthorized } from './session';
-
-const API_URL = import.meta.env.VITE_API_URL;
-
-// Même mécanisme que athletes.api.ts/exercises.api.ts : `credentials: 'include'`
-// systématique et signalement centralisé (session.ts) d'un 401.
-async function apiFetch(path: string, init?: RequestInit): Promise<Response> {
-  const response = await fetch(`${API_URL}${path}`, { ...init, credentials: 'include' });
-  if (response.status === 401) {
-    notifyUnauthorized();
-  }
-  return response;
-}
+import { apiFetch } from './apiClient';
 
 // context=ATHLETE systématique (ticket "NOTIFICATION CONTEXT") : ce frontend
 // ne doit jamais afficher une notification rédigée pour l'interface coach,

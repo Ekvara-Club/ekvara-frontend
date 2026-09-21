@@ -5,7 +5,7 @@ import AuthBrandPanel from '../components/auth/AuthBrandPanel';
 import Button from '../components/ui/Button';
 
 function LoginPage() {
-  const { login } = useAuth();
+  const { login, sessionNotice } = useAuth();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -35,6 +35,14 @@ function LoginPage() {
         <div className="w-full max-w-sm">
           <h1 className="font-display text-2xl font-bold text-ekvara-black">Se connecter</h1>
           <p className="mt-1 text-sm text-ekvara-muted">Accède à ton espace Ekvara</p>
+
+          {/* Session perdue (expirée, fermée ailleurs) : on l'explique ici au
+              lieu de laisser l'utilisateur deviner pourquoi il est déconnecté. */}
+          {sessionNotice && (
+            <p role="status" className="mt-4 rounded-md bg-gray-100 px-3 py-2 text-sm text-ekvara-black">
+              {sessionNotice}
+            </p>
+          )}
 
           <form onSubmit={handleSubmit} className="mt-6 flex flex-col gap-3">
             <div>
