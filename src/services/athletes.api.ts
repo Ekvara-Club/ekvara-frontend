@@ -295,10 +295,12 @@ export async function getCompetitionCatalogPaginated(params: {
   limit: number;
   scope?: CompetitionCatalogScope;
   search?: string;
+  year?: number;
 }): Promise<PaginatedCompetitions> {
   const query = new URLSearchParams({ page: String(params.page), limit: String(params.limit) });
   if (params.scope) query.set('scope', params.scope);
   if (params.search) query.set('search', params.search);
+  if (params.year !== undefined) query.set('year', String(params.year));
 
   const response = await apiFetch(`/competitions?${query.toString()}`);
 
@@ -308,6 +310,19 @@ export async function getCompetitionCatalogPaginated(params: {
 
   const data: PaginatedCompetitions = await response.json();
   return data;
+}
+
+// Années réellement présentes dans le catalogue (année de date_debut, la plus
+// récente d'abord) — jamais une liste codée en dur côté frontend.
+export async function getCompetitionYears(): Promise<number[]> {
+  const response = await apiFetch('/competitions/years');
+
+  if (!response.ok) {
+    throw new Error(`Impossible de récupérer les années du catalogue (${response.status})`);
+  }
+
+  const data: { years: number[] } = await response.json();
+  return data.years;
 }
 
 // Exporté pour que l'appelant puisse distinguer ce message (sûr à afficher

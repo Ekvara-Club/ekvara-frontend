@@ -4,7 +4,12 @@ import CompetitionListRow from '../components/activity/CompetitionListRow';
 import SectionLabel from '../components/ui/SectionLabel';
 import Button from '../components/ui/Button';
 import { useAuth } from '../contexts/AuthContext';
-import { getCoachPreparations, getCompetitions, getCompetitionCatalogPaginated } from '../services/athletes.api';
+import {
+  getCoachPreparations,
+  getCompetitions,
+  getCompetitionCatalogPaginated,
+  getCompetitionYears,
+} from '../services/athletes.api';
 import { navigateTo } from '../utils/navigation';
 import { buildMyUpcomingCompetitions } from '../utils/coachPreparation';
 import type { MyCompetitionRow } from '../utils/coachPreparation';
@@ -53,6 +58,69 @@ function formatCatalogMeta(item: CompetitionCatalogItem): string | null {
   return [item.ville, item.pays].filter(Boolean).join(', ') || null;
 }
 
+// Filtres de l'explorateur (ticket #18), portés par l'URL :
+// /competitions?status=upcoming|past&year=2026. Valeur absente ou invalide ⇒
+// défaut (toutes / toutes les années) — jamais d'erreur affichée pour une URL
+// modifiée à la main.
+type StatusFilter = 'all' | CompetitionCatalogScope;
+
+interface CatalogFilters {
+  status: StatusFilter;
+  year: number | null;
+}
+
+const STATUS_OPTIONS: { value: StatusFilter; label: string }[] = [
+  { value: 'all', label: 'Toutes' },
+  { value: 'upcoming', label: 'À venir' },
+  { value: 'past', label: 'Passées' },
+];
+
+function readFiltersFromUrl(): CatalogFilters {
+  const params = new URLSearchParams(window.location.search);
+  const rawStatus = params.get('status');
+  const status: StatusFilter = rawStatus === 'upcoming' || rawStatus === 'past' ? rawStatus : 'all';
+  const rawYear = params.get('year');
+  const year = rawYear !== null && /^\d{4}$/.test(rawYear) ? Number(rawYear) : null;
+  return { status, year };
+}
+
+// pushState : chaque changement de filtre est une entrée d'historique, que
+// précédent/suivant rejouent (écoute popstate ci-dessous). Les paramètres
+// par défaut sont retirés de l'URL.
+function writeFiltersToUrl(filters: CatalogFilters): void {
+  const params = new URLSearchParams(window.location.search);
+  if (filters.status === 'all') params.delete('status');
+  else params.set('status', filters.status);
+  if (filters.year === null) params.delete('year');
+  else params.set('year', String(filters.year));
+  const query = params.toString();
+  window.history.pushState(window.history.state, '', `${window.location.pathname}${query ? `?${query}` : ''}`);
+}
+
+function useUrlFilters(): [CatalogFilters, (next: CatalogFilters) => void] {
+  const [filters, setFilters] = useState<CatalogFilters>(readFiltersFromUrl);
+
+  useEffect(() => {
+    const onPopState = () => setFilters(readFiltersFromUrl());
+    window.addEventListener('popstate', onPopState);
+    return () => window.removeEventListener('popstate', onPopState);
+  }, []);
+
+  function update(next: CatalogFilters) {
+    writeFiltersToUrl(next);
+    setFilters(next);
+  }
+
+  return [filters, update];
+}
+
+// Message vide qui reflète les filtres actifs (jamais un "Aucune compétition"
+// trompeur quand c'est le filtre qui vide la liste).
+function emptyMessage(scope: CompetitionCatalogScope, year: number | null, search: string): string {
+  const base = scope === 'upcoming' ? 'Aucune compétition à venir' : 'Aucune compétition passée';
+  return `${base}${year !== null ? ` en ${year}` : ''}${search ? ` pour « ${search} »` : ''}.`;
+}
+
 interface CatalogState {
   items: CompetitionCatalogItem[];
   loading: boolean;
@@ -65,7 +133,7 @@ interface CatalogState {
 // Recherche + pagination réellement backend (§6/§8) : chaque section ("À
 // venir"/"Passées") gère son propre catalogue paginé indépendamment, jamais
 // un chargement client de centaines de lignes à filtrer sur place.
-function useCatalogSection(scope: CompetitionCatalogScope, search: string): CatalogState {
+function useCatalogSection(scope: CompetitionCatalogScope, search: string, year: number | null, enabled: boolean): CatalogState {
   const [items, setItems] = useState<CompetitionCatalogItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -73,12 +141,15 @@ function useCatalogSection(scope: CompetitionCatalogScope, search: string): Cata
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
 
+  // Tout changement de filtre (recherche, année) recharge la page 1 : la
+  // pagination repart toujours de zéro. Section masquée (statut) : aucun appel.
   useEffect(() => {
+    if (!enabled) return;
     let cancelled = false;
     setLoading(true);
     setError(null);
 
-    getCompetitionCatalogPaginated({ page: 1, limit: PAGE_SIZE, scope, search: search || undefined })
+    getCompetitionCatalogPaginated({ page: 1, limit: PAGE_SIZE, scope, search: search || undefined, year: year ?? undefined })
       .then((data) => {
         if (cancelled) return;
         setItems(data.items);
@@ -98,12 +169,12 @@ function useCatalogSection(scope: CompetitionCatalogScope, search: string): Cata
     return () => {
       cancelled = true;
     };
-  }, [scope, search]);
+  }, [scope, search, year, enabled]);
 
   function loadMore() {
     const nextPage = page + 1;
     setLoadingMore(true);
-    getCompetitionCatalogPaginated({ page: nextPage, limit: PAGE_SIZE, scope, search: search || undefined })
+    getCompetitionCatalogPaginated({ page: nextPage, limit: PAGE_SIZE, scope, search: search || undefined, year: year ?? undefined })
       .then((data) => {
         setItems((prev) => [...prev, ...data.items]);
         setPage(nextPage);
@@ -119,7 +190,21 @@ function useCatalogSection(scope: CompetitionCatalogScope, search: string): Cata
   return { items, loading, loadingMore, error, total, loadMore };
 }
 
-function CatalogSection({ title, state, search }: { title: string; state: CatalogState; search: string }) {
+function CatalogSection({
+  title,
+  scope,
+  state,
+  search,
+  year,
+  onReset,
+}: {
+  title: string;
+  scope: CompetitionCatalogScope;
+  state: CatalogState;
+  search: string;
+  year: number | null;
+  onReset: (() => void) | null;
+}) {
   const hasMore = state.items.length < state.total;
 
   return (
@@ -133,9 +218,14 @@ function CatalogSection({ title, state, search }: { title: string; state: Catalo
       )}
 
       {!state.loading && !state.error && state.items.length === 0 && (
-        <p className="mt-4 text-sm text-ekvara-muted">
-          {search ? `Aucun résultat pour « ${search} ».` : 'Aucune compétition trouvée.'}
-        </p>
+        <div className="mt-4">
+          <p className="text-sm text-ekvara-muted">{emptyMessage(scope, year, search)}</p>
+          {onReset && (
+            <Button variant="ghost" onClick={onReset} className="mt-2">
+              Voir toutes les compétitions →
+            </Button>
+          )}
+        </div>
       )}
 
       {!state.loading && !state.error && state.items.length > 0 && (
@@ -222,8 +312,32 @@ function CompetitionsPage() {
     return () => clearTimeout(timer);
   }, [searchInput]);
 
-  const upcoming = useCatalogSection('upcoming', search);
-  const past = useCatalogSection('past', search);
+  const [filters, setFilters] = useUrlFilters();
+  const showUpcoming = filters.status !== 'past';
+  const showPast = filters.status !== 'upcoming';
+  const upcoming = useCatalogSection('upcoming', search, filters.year, showUpcoming);
+  const past = useCatalogSection('past', search, filters.year, showPast);
+
+  // Années du catalogue : si indisponibles, le sélecteur n'offre que "Toutes
+  // les années" (et l'année éventuellement présente dans l'URL) — le reste de
+  // l'explorateur fonctionne normalement.
+  const [years, setYears] = useState<number[]>([]);
+  useEffect(() => {
+    let cancelled = false;
+    getCompetitionYears()
+      .then((data) => {
+        if (!cancelled) setYears(data);
+      })
+      .catch((error: Error) => console.error('Erreur lors du chargement des années', error));
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+  const yearOptions =
+    filters.year !== null && !years.includes(filters.year) ? [...years, filters.year].sort((a, b) => b - a) : years;
+
+  const filtersActive = filters.status !== 'all' || filters.year !== null;
+  const resetFilters = filtersActive ? () => setFilters({ status: 'all', year: null }) : null;
 
   return (
     <div className="min-h-screen bg-ekvara-surface">
@@ -251,11 +365,56 @@ function CompetitionsPage() {
           />
         </div>
 
-        {/* Mes compétitions masqué pendant une recherche active : sinon une
-            liste figée (non filtrée) resterait affichée à côté d'un catalogue
-            filtré, un décalage confus (§5 : bien distinguer mes compétitions
-            du catalogue). */}
-        {!search && (
+        {/* Filtres (ticket #18) : statut toujours visible, année en sélecteur
+            compact ; les deux composent avec la recherche. */}
+        <div className="mt-5 flex flex-wrap items-center justify-between gap-x-6 gap-y-3">
+          <div role="group" aria-label="Statut" className="flex items-center gap-5">
+            {STATUS_OPTIONS.map((option) => {
+              const active = filters.status === option.value;
+              return (
+                <button
+                  key={option.value}
+                  type="button"
+                  aria-pressed={active}
+                  onClick={() => {
+                    if (!active) setFilters({ ...filters, status: option.value });
+                  }}
+                  className={`border-b-2 pb-0.5 text-sm transition-colors ${
+                    active
+                      ? 'border-ekvara-lime font-semibold text-ekvara-black'
+                      : 'border-transparent font-medium text-ekvara-black/50 hover:text-ekvara-black'
+                  }`}
+                >
+                  {option.label}
+                </button>
+              );
+            })}
+          </div>
+
+          <label className="flex items-center gap-2 text-sm">
+            <span className="sr-only">Année</span>
+            <select
+              value={filters.year === null ? '' : String(filters.year)}
+              onChange={(event) =>
+                setFilters({ ...filters, year: event.target.value === '' ? null : Number(event.target.value) })
+              }
+              className="border-b border-ekvara-black/20 bg-transparent py-1 pr-1 text-sm font-medium text-ekvara-black focus:border-ekvara-black focus:outline-none"
+            >
+              <option value="">Toutes les années</option>
+              {yearOptions.map((y) => (
+                <option key={y} value={String(y)}>
+                  {y}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+
+        {/* Mes compétitions masqué pendant une recherche ou un filtre actif :
+            sinon une liste figée (non filtrée) resterait affichée à côté d'un
+            catalogue filtré, un décalage confus (§5 : bien distinguer mes
+            compétitions du catalogue). */}
+        {!search && !filtersActive && (
           <section className="mt-10">
             <SectionLabel>Mes compétitions</SectionLabel>
 
@@ -288,8 +447,26 @@ function CompetitionsPage() {
           </section>
         )}
 
-        <CatalogSection title="À venir" state={upcoming} search={search} />
-        <CatalogSection title="Passées" state={past} search={search} />
+        {showUpcoming && (
+          <CatalogSection
+            title="À venir"
+            scope="upcoming"
+            state={upcoming}
+            search={search}
+            year={filters.year}
+            onReset={resetFilters}
+          />
+        )}
+        {showPast && (
+          <CatalogSection
+            title="Passées"
+            scope="past"
+            state={past}
+            search={search}
+            year={filters.year}
+            onReset={resetFilters}
+          />
+        )}
       </main>
     </div>
   );
