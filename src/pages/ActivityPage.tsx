@@ -7,25 +7,42 @@ import AddCompetitionModal from '../components/activity/AddCompetitionModal';
 import Button from '../components/ui/Button';
 import SectionLabel from '../components/ui/SectionLabel';
 import { useAuth } from '../contexts/AuthContext';
-import { getTrainings, getCompetitions } from '../services/athletes.api';
+import { getTrainings, getCompetitions, getCoachPreparations } from '../services/athletes.api';
 import { navigateTo } from '../utils/navigation';
 import { hasCompetitionResult, isPodium } from '../utils/participationStats';
+import { buildMyCompetitions } from '../utils/coachPreparation';
+import type { MyCompetitionRow } from '../utils/coachPreparation';
+import type { CoachPreparationItem } from '../types/competition';
 import type { TrainingItem } from '../types/training';
 import type { ParticipationListItem } from '../types/activity';
 import { addWeeks, formatWeekLabel, getDaysOfWeek, getWeekRange } from '../utils/week';
 
 const EXCLUDED_TRAINING_STATUS = 'annule';
-const EXCLUDED_PARTICIPATION_STATUSES = ['annule', 'retire'];
 
 function parseDateOnly(dateString: string): Date {
   const [year, month, day] = dateString.slice(0, 10).split('-').map(Number);
   return new Date(year, month - 1, day);
 }
 
-function formatCompetitionMeta(p: ParticipationListItem): string | null {
-  const { competition } = p;
-  return [competition.ville, competition.pays, competition.niveau].filter(Boolean).join(' · ') || null;
+function capitalizeFirst(value: string): string {
+  return value.charAt(0).toUpperCase() + value.slice(1);
 }
+
+// Ligne de méta : lieu · niveau, puis le contexte PROUVÉ par les données —
+// statut de la participation, ou "Prévue par ton coach" pour une compétition
+// seulement préparée (jamais présentée comme une inscription) — et la
+// catégorie si elle est connue (jamais déduite).
+function formatCompetitionMeta(row: MyCompetitionRow): string | null {
+  const { competition } = row;
+  const place = [competition.ville, competition.pays, competition.niveau].filter(Boolean).join(' · ');
+  const context = row.participation ? capitalizeFirst(row.participation.statut) : 'Prévue par ton coach';
+  const category = [row.categorieAge, row.categoriePoids].filter(Boolean).join(' · ');
+  return [place, context, category].filter(Boolean).join(' · ') || null;
+}
+
+// Historique borné à l'affichage initial : les plus récentes d'abord, le reste
+// sur demande (jamais masqué définitivement — /activite est aussi l'historique).
+const PAST_INITIAL_COUNT = 5;
 
 function startOfToday(): Date {
   const now = new Date();
@@ -76,8 +93,10 @@ function ActivityPage() {
   const [trainingsError, setTrainingsError] = useState<string | null>(null);
 
   const [competitions, setCompetitions] = useState<ParticipationListItem[]>([]);
+  const [preparations, setPreparations] = useState<CoachPreparationItem[]>([]);
   const [competitionsLoading, setCompetitionsLoading] = useState(true);
   const [competitionsError, setCompetitionsError] = useState<string | null>(null);
+  const [showAllPast, setShowAllPast] = useState(false);
 
   const [isAddMenuOpen, setIsAddMenuOpen] = useState(false);
   const [isAddTrainingOpen, setIsAddTrainingOpen] = useState(false);
@@ -118,16 +137,28 @@ function ActivityPage() {
   // Réutilisée à la fois par l'effet initial et par le rafraîchissement
   // immédiat après une nouvelle participation, sans jamais recharger les
   // entraînements.
+  // Mes compétitions = participations + préparations coach visibles par
+  // l'athlète (vue Athlete-safe, jamais de note coach), combinées par
+  // buildMyCompetitions — la même règle que "Mes compétitions" de
+  // /competitions. Les préparations enrichissent la liste mais ne doivent
+  // jamais la faire échouer : indisponibles, les participations restent.
   function loadCompetitions(isCancelled: () => boolean) {
     setCompetitionsLoading(true);
     setCompetitionsError(null);
 
-    getCompetitions(athleteId)
-      .then((data) => {
+    Promise.all([
+      getCompetitions(athleteId),
+      getCoachPreparations(athleteId).catch((error: Error) => {
+        console.error('Erreur lors du chargement des préparations coach', error);
+        return [] as CoachPreparationItem[];
+      }),
+    ])
+      .then(([participations, coachPreparations]) => {
         if (!isCancelled()) {
-          setCompetitions(
-            data.filter((p) => !EXCLUDED_PARTICIPATION_STATUSES.includes(p.statut)),
-          );
+          // Liste brute conservée : buildMyCompetitions a besoin de TOUTES les
+          // participations (une participation annulée masque la préparation).
+          setCompetitions(participations);
+          setPreparations(coachPreparations);
         }
       })
       .catch((error: Error) => {
@@ -153,12 +184,9 @@ function ActivityPage() {
   const days = getDaysOfWeek(monday);
 
   const today = startOfToday();
-  const upcoming = competitions
-    .filter((p) => parseDateOnly(p.competition.dateFin ?? p.competition.dateDebut) >= today)
-    .sort((a, b) => a.competition.dateDebut.localeCompare(b.competition.dateDebut));
-  const past = competitions
-    .filter((p) => parseDateOnly(p.competition.dateFin ?? p.competition.dateDebut) < today)
-    .sort((a, b) => b.competition.dateDebut.localeCompare(a.competition.dateDebut));
+  const { upcoming, past } = buildMyCompetitions(competitions, preparations, today);
+  const visiblePast = showAllPast ? past : past.slice(0, PAST_INITIAL_COUNT);
+  const hasAnyCompetition = upcoming.length > 0 || past.length > 0;
 
   return (
     <div className="min-h-screen bg-ekvara-surface">
@@ -279,24 +307,24 @@ function ActivityPage() {
             <p className="mt-4 text-sm text-red-600">Impossible de charger les compétitions.</p>
           )}
 
-          {!competitionsLoading && !competitionsError && competitions.length === 0 && (
+          {!competitionsLoading && !competitionsError && !hasAnyCompetition && (
             <p className="mt-4 text-sm text-ekvara-muted">Aucune compétition enregistrée pour le moment.</p>
           )}
 
-          {!competitionsLoading && !competitionsError && competitions.length > 0 && (
+          {!competitionsLoading && !competitionsError && hasAnyCompetition && (
             <div className="mt-4 flex flex-col gap-8">
               {upcoming.length > 0 && (
                 <div>
                   <p className="text-xs font-medium uppercase tracking-wide text-ekvara-muted">À venir</p>
                   <ul className="mt-1 divide-y divide-gray-100">
-                    {upcoming.map((p) => (
+                    {upcoming.map((row) => (
                       <CompetitionListRow
-                        key={p.id}
-                        dateDebut={p.competition.dateDebut}
-                        nom={p.competition.nom}
-                        metaLine={formatCompetitionMeta(p)}
-                        rightLabel={getDaysUntilLabel(p.competition.dateDebut)}
-                        onClick={() => navigateTo(`/competitions/${p.competition.id}`)}
+                        key={row.key}
+                        dateDebut={row.competition.dateDebut}
+                        nom={row.competition.nom}
+                        metaLine={formatCompetitionMeta(row)}
+                        rightLabel={getDaysUntilLabel(row.competition.dateDebut)}
+                        onClick={() => navigateTo(`/competitions/${row.competition.id}`)}
                       />
                     ))}
                   </ul>
@@ -307,18 +335,25 @@ function ActivityPage() {
                 <div>
                   <p className="text-xs font-medium uppercase tracking-wide text-ekvara-muted">Passées</p>
                   <ul className="mt-1 divide-y divide-gray-100">
-                    {past.map((p) => (
+                    {visiblePast.map((row) => (
                       <CompetitionListRow
-                        key={p.id}
-                        dateDebut={p.competition.dateDebut}
-                        nom={p.competition.nom}
-                        metaLine={formatCompetitionMeta(p)}
-                        rightLabel={formatResultSummary(p) ?? 'Résultat non renseigné'}
-                        highlight={hasCompetitionResult(p) && isPodium(p)}
-                        onClick={() => navigateTo(`/competitions/${p.competition.id}`)}
+                        key={row.key}
+                        dateDebut={row.competition.dateDebut}
+                        nom={row.competition.nom}
+                        metaLine={formatCompetitionMeta(row)}
+                        // Résultat seulement pour une participation officielle ;
+                        // une compétition seulement préparée n'a pas de résultat.
+                        rightLabel={row.participation ? (formatResultSummary(row.participation) ?? 'Résultat non renseigné') : null}
+                        highlight={row.participation !== null && hasCompetitionResult(row.participation) && isPodium(row.participation)}
+                        onClick={() => navigateTo(`/competitions/${row.competition.id}`)}
                       />
                     ))}
                   </ul>
+                  {past.length > PAST_INITIAL_COUNT && (
+                    <Button variant="ghost" onClick={() => setShowAllPast((v) => !v)} className="mt-3">
+                      {showAllPast ? 'Afficher moins' : `Voir tout (${past.length})`}
+                    </Button>
+                  )}
                 </div>
               )}
             </div>

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildMyUpcomingCompetitions, formatPlannedCategory, formatPreparationStatus } from './coachPreparation';
+import { buildMyCompetitions, buildMyUpcomingCompetitions, formatPlannedCategory, formatPreparationStatus } from './coachPreparation';
 import { competition, participation, preparation } from '../test/fixtures';
 
 const TODAY = new Date(2026, 8, 21);
@@ -111,5 +111,71 @@ describe('buildMyUpcomingCompetitions', () => {
     const rows = buildMyUpcomingCompetitions([], [preparation({ competition: today, competitionId: 'today' })], TODAY);
 
     expect(rows).toHaveLength(1);
+  });
+});
+
+describe('buildMyCompetitions — règle unique de "Mes compétitions" (#20)', () => {
+  const RUNNING = competition({ id: 'running', nom: 'En cours', dateDebut: '2026-09-20', dateFin: '2026-09-22' });
+  const ONE_DAY_TODAY = competition({ id: 'today', nom: "Aujourd'hui", dateDebut: '2026-09-21', dateFin: null });
+  const ENDED_YESTERDAY = competition({ id: 'ended', nom: 'Finie hier', dateDebut: '2026-09-18', dateFin: '2026-09-20' });
+  const OLDER = competition({ id: 'older', nom: 'Plus ancienne', dateDebut: '2025-05-01' });
+
+  it('préparation coach seule (cas réel Kaïs) : visible dans "à venir", source coach_preparation, jamais une participation', () => {
+    const { upcoming, past } = buildMyCompetitions([], [preparation({ competition: FUTURE, competitionId: FUTURE.id })], TODAY);
+    expect(upcoming).toHaveLength(1);
+    expect(upcoming[0]).toMatchObject({ source: 'coach_preparation', participation: null, categorieAge: 'Senior', categoriePoids: '-68kg' });
+    expect(upcoming[0].competition.id).toBe(FUTURE.id);
+    expect(past).toEqual([]);
+  });
+
+  it('participation + préparation sur la même compétition : UNE ligne, la participation (catégorie officielle d’abord)', () => {
+    const { upcoming } = buildMyCompetitions(
+      [participation({ competition: FUTURE })],
+      [preparation({ competition: FUTURE, competitionId: FUTURE.id })],
+      TODAY,
+    );
+    expect(upcoming).toHaveLength(1);
+    expect(upcoming[0]).toMatchObject({ source: 'participation', categorieAge: 'Cadet', categoriePoids: '-74 kg' });
+    expect(upcoming[0].participation?.id).toBe('part-1');
+  });
+
+  it('participation annulée : exclue ET masque la préparation de la même compétition ; préparation forfait exclue', () => {
+    const { upcoming, past } = buildMyCompetitions(
+      [participation({ statut: 'annule', competition: FUTURE })],
+      [preparation({ competition: FUTURE, competitionId: FUTURE.id }), preparation({ competition: NEAR, competitionId: NEAR.id, status: 'forfait' })],
+      TODAY,
+    );
+    expect(upcoming).toEqual([]);
+    expect(past).toEqual([]);
+  });
+
+  it('fin effective : multi-jours en cours et un jour aujourd’hui ⇒ à venir ; finie hier ⇒ passée', () => {
+    const { upcoming, past } = buildMyCompetitions(
+      [
+        participation({ id: 'r', competition: RUNNING }),
+        participation({ id: 't', competition: ONE_DAY_TODAY }),
+        participation({ id: 'e', competition: ENDED_YESTERDAY }),
+      ],
+      [],
+      TODAY,
+    );
+    expect(upcoming.map((r) => r.competition.id)).toEqual(['running', 'today']);
+    expect(past.map((r) => r.competition.id)).toEqual(['ended']);
+  });
+
+  it('ordres : à venir la plus proche d’abord ; passées la plus récente d’abord (préparations passées incluses)', () => {
+    const { upcoming, past } = buildMyCompetitions(
+      [participation({ id: 'f', competition: FUTURE }), participation({ id: 'o', competition: OLDER })],
+      [preparation({ competition: NEAR, competitionId: NEAR.id }), preparation({ competition: PAST, competitionId: PAST.id })],
+      TODAY,
+    );
+    expect(upcoming.map((r) => r.competition.id)).toEqual(['near', 'future']);
+    expect(past.map((r) => r.competition.id)).toEqual(['past', 'older']);
+    expect(past[0].source).toBe('coach_preparation');
+  });
+
+  it('buildMyUpcomingCompetitions = la partie "à venir" de la même règle', () => {
+    const participations = [participation({ id: 'r', competition: RUNNING })];
+    expect(buildMyUpcomingCompetitions(participations, [], TODAY)).toEqual(buildMyCompetitions(participations, [], TODAY).upcoming);
   });
 });
