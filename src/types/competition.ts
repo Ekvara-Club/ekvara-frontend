@@ -71,6 +71,14 @@ export interface CompetitionDetail {
   // (nom + lien externe si connu) — source/sourceExternalId ci-dessus
   // restent la source primaire historique, jamais retirés.
   sources: CompetitionSourceRef[];
+  // Ticket "Competition Detail V2" : jeux de données réellement présents
+  // pour cette compétition canonique (inscrits publiés ≠ combats).
+  availability: CompetitionAvailability;
+}
+
+export interface CompetitionAvailability {
+  entryCount: number;
+  matchCount: number;
 }
 
 // GET /competitions (catalogue global, pas scopé athlète) : réponse vérifiée

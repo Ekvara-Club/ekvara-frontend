@@ -68,3 +68,33 @@ export function formatScore(athleteScore: number | null, opponentScore: number |
 export function formatFightCount(count: number): string {
   return `${count} ${count === 1 ? 'combat' : 'combats'}`;
 }
+
+// Titres de tour pour les résultats d'une compétition (pluriel quand le tour
+// compte plusieurs combats par nature). Seuls les codes compris sont traduits ;
+// tout autre code est affiché tel que stocké, un tour absent reste explicite.
+const ROUND_HEADINGS: Record<string, string> = {
+  R128: '1/64 de finale',
+  R64: '1/32 de finale',
+  R32: '1/16 de finale',
+  R16: '1/8 de finale',
+  QF: 'Quarts de finale',
+  SF: 'Demi-finales',
+  BMC: 'Combats pour le bronze',
+  F: 'Finale',
+};
+
+export function formatRoundHeading(stage: string | null): string {
+  if (stage === null || stage.trim() === '') return 'Tour non renseigné';
+  return ROUND_HEADINGS[stage] ?? stage;
+}
+
+// Lecture structurelle d'un label de catégorie UNIQUEMENT quand il a
+// exactement la forme "<Préfixe> -58kg" / "<Préfixe> +80kg" (même règle que
+// le tri backend). Le préfixe est gardé tel quel (jamais traduit ni fusionné) ;
+// tout autre label reste non structuré et s'affiche en entier.
+const WEIGHT_CATEGORY = /^([A-Za-z]+(?: [A-Za-z]+)*) ([+-]\d+)kg$/;
+
+export function splitWeightCategory(label: string): { group: string; weight: string } | null {
+  const match = WEIGHT_CATEGORY.exec(label);
+  return match ? { group: match[1], weight: `${match[2]} kg` } : null;
+}

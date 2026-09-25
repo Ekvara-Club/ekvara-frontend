@@ -3,6 +3,7 @@ import Header from '../components/layout/Header';
 import CompetitionResultModal from '../components/passport/CompetitionResultModal';
 import CompetitionEntriesSection from '../components/competition/CompetitionEntriesSection';
 import CoachPreparationSection from '../components/competition/CoachPreparationSection';
+import CompetitionResultsSection from '../components/competition/CompetitionResultsSection';
 import Button from '../components/ui/Button';
 import SectionLabel from '../components/ui/SectionLabel';
 import StatValue from '../components/ui/StatValue';
@@ -103,7 +104,18 @@ function isCompetitionPast(competition: CompetitionDetail): boolean {
 const SOURCE_LABELS: Record<string, string> = {
   fftda: 'FFTDA',
   world_taekwondo: 'World Taekwondo',
+  world_taekwondo_results: 'World Taekwondo Results',
   martial_events: 'Martial Events',
+};
+
+// Ce que chaque source apporte réellement à la fiche, d'après les importeurs
+// EKVARA existants (calendrier, inscrits, combats) — jamais une description
+// inventée ; source inconnue ⇒ aucun rôle affiché.
+const SOURCE_ROLES: Record<string, string> = {
+  fftda: 'Calendrier',
+  world_taekwondo: 'Calendrier officiel',
+  world_taekwondo_results: 'Résultats et combats',
+  martial_events: 'Calendrier et inscrits',
 };
 
 function formatSourceLabel(source: string): string {
@@ -112,16 +124,17 @@ function formatSourceLabel(source: string): string {
 
 // Ticket "Compétitions Athlete V2" §20-21 : une seule fiche par compétition
 // canonique, jamais une ligne par source — juste la liste des sources ayant
-// contribué, avec lien externe si connu. Aucun id technique affiché.
+// contribué (et ce qu'elles apportent), avec lien externe seulement s'il est
+// stocké. Aucun id technique affiché.
 function SourcesSection({ sources }: { sources: CompetitionDetail['sources'] }) {
   if (sources.length === 0) return null;
 
   return (
     <section className="mt-10 border-t border-gray-200 pt-8">
       <SectionLabel>Sources des données</SectionLabel>
-      <ul className="mt-4 flex flex-col gap-2">
+      <ul className="mt-4 divide-y divide-gray-100">
         {sources.map((entry) => (
-          <li key={entry.source} className="text-sm text-ekvara-black">
+          <li key={entry.source} className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-0.5 py-2.5 text-sm">
             {entry.sourceUrl ? (
               <a
                 href={entry.sourceUrl}
@@ -133,7 +146,12 @@ function SourcesSection({ sources }: { sources: CompetitionDetail['sources'] }) 
                 <span className="sr-only"> (ouvre un site externe dans un nouvel onglet)</span>
               </a>
             ) : (
-              <span className="font-medium">{formatSourceLabel(entry.source)}</span>
+              <span className="font-medium text-ekvara-black">{formatSourceLabel(entry.source)}</span>
+            )}
+            {SOURCE_ROLES[entry.source] && (
+              <span className="text-xs font-semibold uppercase tracking-wide text-ekvara-black/50">
+                {SOURCE_ROLES[entry.source]}
+              </span>
             )}
           </li>
         ))}
@@ -357,9 +375,31 @@ function CompetitionPage({ competitionId }: CompetitionPageProps) {
   // Extrait en variable (jamais dupliqué) car sa position par rapport au bloc
   // Inscrits dépend de isCompetitionPast (§7) — le contenu reste identique,
   // seul l'ordre de rendu change.
+  // Ticket "Competition Detail V2" : la fiche ne montre que les jeux de
+  // données réellement présents. Inscrits (competition_entry) : affichés s'il
+  // en existe, ou si la compétition est à venir et publiée par la source qui
+  // fournit des inscrits (Martial Events) — l'état "aucun inscrit publié pour
+  // le moment" y reste informatif. Résultats (competition_match) : seulement
+  // s'il existe des combats. Jamais l'un dérivé de l'autre.
+  const competitionIsPast = competition ? isCompetitionPast(competition) : false;
+  const showEntries =
+    competition !== null &&
+    (competition.availability.entryCount > 0 ||
+      (!competitionIsPast && competition.sources.some((s) => s.source === 'martial_events')));
+  const showEventResults = competition !== null && competition.availability.matchCount > 0;
+
+  const entriesSection = showEntries && (
+    <CompetitionEntriesSection
+      competitionId={competitionId}
+      categorieAge={myParticipation?.categorieAge ?? null}
+      categoriePoids={myParticipation?.categoriePoids ?? null}
+    />
+  );
+  const eventResultsSection = showEventResults && <CompetitionResultsSection competitionId={competitionId} />;
+
   const resultSection = (participationsLoading || participationsError || myParticipation) && (
     <section className="mt-10 border-t border-gray-200 pt-8">
-      <SectionLabel>Résultat</SectionLabel>
+      <SectionLabel>Mon résultat</SectionLabel>
 
       {participationsLoading && <p className="mt-4 text-sm text-ekvara-muted">Chargement...</p>}
 
@@ -477,24 +517,20 @@ function CompetitionPage({ competitionId }: CompetitionPageProps) {
 
             {/* Ordre §7 : pour une compétition future, Inscrits prime sur
                 Résultat (résultat pas encore disponible) ; pour une
-                compétition passée, Résultat prime sur Inscrits. */}
-            {isCompetitionPast(competition) ? (
+                compétition passée, Résultat prime sur Inscrits. Les résultats
+                de l'événement (combats) suivent le résultat personnel et
+                précèdent les inscrits d'une compétition passée. */}
+            {competitionIsPast ? (
               <>
                 {resultSection}
-                <CompetitionEntriesSection
-                  competitionId={competitionId}
-                  categorieAge={myParticipation?.categorieAge ?? null}
-                  categoriePoids={myParticipation?.categoriePoids ?? null}
-                />
+                {eventResultsSection}
+                {entriesSection}
               </>
             ) : (
               <>
-                <CompetitionEntriesSection
-                  competitionId={competitionId}
-                  categorieAge={myParticipation?.categorieAge ?? null}
-                  categoriePoids={myParticipation?.categoriePoids ?? null}
-                />
+                {entriesSection}
                 {resultSection}
+                {eventResultsSection}
               </>
             )}
 

@@ -94,3 +94,41 @@ export interface WtCompetitionHistoryItem {
   unknown: number;
   matches: WtAthleteFight[];
 }
+
+// Résultats d'une compétition canonique (GET /competitions/:id/results).
+export interface CompetitionResultsCategory {
+  label: string;
+  fightCount: number;
+  athleteCount: number;
+}
+
+export interface CompetitionResultsSummary {
+  competitionId: string;
+  matchCount: number;
+  athleteCount: number;
+  // Ordre sportif déterministe fourni par le backend.
+  categories: CompetitionResultsCategory[];
+}
+
+// winnerSide vient du vainqueur enregistré (jamais des scores) : null si
+// aucun vainqueur valide — aucun vainqueur n'est alors mis en avant.
+export interface CompetitionResultFight {
+  id: string;
+  category: string | null;
+  stage: string | null;
+  contestNumber: number | null;
+  athleteA: WtAthleteSummary;
+  athleteB: WtAthleteSummary;
+  scoreA: number | null;
+  scoreB: number | null;
+  winnerSide: 'A' | 'B' | null;
+  method: string | null;
+  sources: WtSourceRef[];
+}
+
+export interface CompetitionCategoryResults {
+  competitionId: string;
+  category: string;
+  fightCount: number;
+  rounds: { stage: string | null; fights: CompetitionResultFight[] }[];
+}

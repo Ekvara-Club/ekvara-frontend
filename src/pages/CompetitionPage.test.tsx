@@ -14,7 +14,8 @@ const api = vi.hoisted(() => ({
 vi.mock('../services/athletes.api', () => api);
 vi.mock('../contexts/AuthContext', () => ({ useAuth: () => ({ athlete: { id: 'athlete-1' } }) }));
 vi.mock('../components/layout/Header', () => ({ default: () => <header data-testid="header" /> }));
-vi.mock('../components/competition/CompetitionEntriesSection', () => ({ default: () => null }));
+vi.mock('../components/competition/CompetitionEntriesSection', () => ({ default: () => <div data-testid="entries-section" /> }));
+vi.mock('../components/competition/CompetitionResultsSection', () => ({ default: () => <div data-testid="event-results-section" /> }));
 vi.mock('../components/passport/CompetitionResultModal', () => ({ default: () => null }));
 
 const DETAIL = {
@@ -23,6 +24,7 @@ const DETAIL = {
   sourceExternalId: null,
   saison: '2026-2027',
   sources: [],
+  availability: { entryCount: 0, matchCount: 0 },
 };
 
 describe('CompetitionPage — détail athlète', () => {
@@ -125,5 +127,69 @@ describe('CompetitionPage — détail athlète', () => {
       expect(screen.getByText("Cette compétition n'est pas ajoutée à ton planning.")).toBeInTheDocument(),
     );
     consoleError.mockRestore();
+  });
+
+  describe('fiche adaptative (Competition Detail V2)', () => {
+    it('compétition FFTDA sans inscrits ni combats : ni "Inscrits" ni résultats d\'événement, "Ma participation" conservée', async () => {
+      api.getCompetitionById.mockResolvedValue({ ...DETAIL, sources: [{ source: 'fftda', sourceUrl: null }] });
+      render(<CompetitionPage competitionId="comp-champ" />);
+
+      expect(await screen.findByText('Ma participation')).toBeInTheDocument();
+      expect(screen.queryByTestId('entries-section')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('event-results-section')).not.toBeInTheDocument();
+    });
+
+    it('compétition avec combats WT : section résultats de l\'événement rendue, inscrits omis', async () => {
+      api.getCompetitionById.mockResolvedValue({
+        ...DETAIL,
+        dateDebut: '2026-09-05T00:00:00.000Z',
+        availability: { entryCount: 0, matchCount: 234 },
+        sources: [{ source: 'world_taekwondo', sourceUrl: null }, { source: 'world_taekwondo_results', sourceUrl: null }],
+      });
+      render(<CompetitionPage competitionId="comp-champ" />);
+
+      expect(await screen.findByTestId('event-results-section')).toBeInTheDocument();
+      expect(screen.queryByTestId('entries-section')).not.toBeInTheDocument();
+    });
+
+    it('inscrits publiés + combats : les deux sections, distinctes', async () => {
+      api.getCompetitionById.mockResolvedValue({ ...DETAIL, availability: { entryCount: 40, matchCount: 12 } });
+      render(<CompetitionPage competitionId="comp-champ" />);
+
+      expect(await screen.findByTestId('entries-section')).toBeInTheDocument();
+      expect(screen.getByTestId('event-results-section')).toBeInTheDocument();
+    });
+
+    it('compétition à venir publiée par Martial Events sans inscrits : section Inscrits conservée (publication attendue)', async () => {
+      api.getCompetitionById.mockResolvedValue({ ...DETAIL, sources: [{ source: 'martial_events', sourceUrl: null }] });
+      render(<CompetitionPage competitionId="comp-champ" />);
+
+      expect(await screen.findByTestId('entries-section')).toBeInTheDocument();
+    });
+
+    it('sources : libellé et rôle de chaque source, lien seulement s\'il est stocké', async () => {
+      api.getCompetitionById.mockResolvedValue({
+        ...DETAIL,
+        sources: [
+          { source: 'world_taekwondo', sourceUrl: 'https://www.worldtaekwondo.org/x' },
+          { source: 'world_taekwondo_results', sourceUrl: null },
+        ],
+      });
+      render(<CompetitionPage competitionId="comp-champ" />);
+
+      expect(await screen.findByText('Sources des données')).toBeInTheDocument();
+      expect(screen.getByRole('link', { name: /World Taekwondo/ })).toHaveAttribute('href', 'https://www.worldtaekwondo.org/x');
+      expect(screen.getByText('World Taekwondo Results')).toBeInTheDocument();
+      expect(screen.queryByRole('link', { name: /World Taekwondo Results/ })).not.toBeInTheDocument();
+      expect(screen.getByText('Calendrier officiel')).toBeInTheDocument();
+      expect(screen.getByText('Résultats et combats')).toBeInTheDocument();
+    });
+
+    it('résultat personnel renommé "Mon résultat" (distinct des résultats de l\'événement)', async () => {
+      api.getCompetitions.mockResolvedValue([participation()]);
+      render(<CompetitionPage competitionId="comp-champ" />);
+
+      expect(await screen.findByText('Mon résultat')).toBeInTheDocument();
+    });
   });
 });

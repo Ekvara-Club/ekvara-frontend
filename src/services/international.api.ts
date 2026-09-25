@@ -1,4 +1,6 @@
 import type {
+  CompetitionCategoryResults,
+  CompetitionResultsSummary,
   WtAthleteProfile,
   WtAthleteSearchItem,
   WtCompetitionHistoryItem,
@@ -66,5 +68,34 @@ export async function getWtAthleteCompetitions(
   }
 
   const data: WtPaginated<WtCompetitionHistoryItem> = await response.json();
+  return data;
+}
+
+// Résumé des résultats d'une compétition canonique (totaux + catégories) :
+// jamais la liste des combats de tout l'événement.
+export async function getCompetitionResultsSummary(competitionId: string): Promise<CompetitionResultsSummary> {
+  const response = await apiFetch(`/competitions/${encodeURIComponent(competitionId)}/results`);
+
+  if (!response.ok) {
+    throw new Error(`Impossible de récupérer les résultats (${response.status})`);
+  }
+
+  const data: CompetitionResultsSummary = await response.json();
+  return data;
+}
+
+// Combats d'UNE catégorie (label stocké exact), groupés par tour.
+export async function getCompetitionCategoryResults(
+  competitionId: string,
+  category: string,
+): Promise<CompetitionCategoryResults> {
+  const query = new URLSearchParams({ category });
+  const response = await apiFetch(`/competitions/${encodeURIComponent(competitionId)}/results?${query.toString()}`);
+
+  if (!response.ok) {
+    throw new Error(`Impossible de récupérer les combats de la catégorie (${response.status})`);
+  }
+
+  const data: CompetitionCategoryResults = await response.json();
   return data;
 }
