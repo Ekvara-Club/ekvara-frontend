@@ -35,12 +35,12 @@ function WtCompetitionBlock({ item }: WtCompetitionBlockProps) {
       >
         {competition.name}
       </a>
-      <p className="mt-1 text-sm text-ekvara-muted">{meta}</p>
+      <p className="mt-1 text-sm text-ekvara-black/60">{meta}</p>
       <p className="mt-2 flex flex-wrap items-baseline gap-x-3 gap-y-1 text-sm">
         {item.categories.length > 0 && (
           <span className="font-semibold text-ekvara-black">{item.categories.join(' · ')}</span>
         )}
-        <span className="text-ekvara-muted">{tally}</span>
+        <span className="text-ekvara-black/55">{tally}</span>
       </p>
 
       <ul className="mt-2 divide-y divide-gray-100">

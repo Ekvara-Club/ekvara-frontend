@@ -128,7 +128,8 @@ describe('WtAthletePage — profil public World Taekwondo', () => {
 
     const rows = screen.getAllByRole('listitem');
     expect(within(rows[0]).getByText('Victoire')).toBeInTheDocument();
-    expect(within(rows[0]).getByText('Quart')).toBeInTheDocument();
+    expect(within(rows[0]).getByText('Quart de finale')).toBeInTheDocument();
+    expect(within(rows[1]).getByText('Demi-finale')).toBeInTheDocument();
     expect(within(rows[0]).getByText('2 — 1')).toBeInTheDocument();
     expect(within(rows[0]).getByText('PTF')).toBeInTheDocument();
     // Défaite avec score de l'athlète en premier, jamais réordonnée par le front.
@@ -161,6 +162,32 @@ describe('WtAthletePage — profil public World Taekwondo', () => {
     expect(within(row).getByText('Inconnu')).toBeInTheDocument();
     expect(within(row).getByText('Tour —')).toBeInTheDocument();
     expect(within(row).queryByText('Victoire')).not.toBeInTheDocument();
+  });
+
+  it('tours : libellés français pour les codes compris, code stocké affiché tel quel sinon (jamais inventé)', async () => {
+    api.getWtAthleteCompetitions.mockResolvedValue({
+      items: [
+        competitionItem({
+          matches: [
+            fight({ id: 'a', stage: 'R32' }),
+            fight({ id: 'b', stage: 'R16' }),
+            fight({ id: 'c', stage: 'F' }),
+            fight({ id: 'd', stage: 'BMC' }),
+            fight({ id: 'e', stage: 'XYZ' }),
+          ],
+        }),
+      ],
+      total: 1,
+      page: 1,
+      limit: 10,
+    });
+    render(<WtAthletePage athleteId="ath-1" />);
+
+    expect(await screen.findByText('1/16 de finale')).toBeInTheDocument();
+    expect(screen.getByText('1/8 de finale')).toBeInTheDocument();
+    expect(screen.getByText('Finale')).toBeInTheDocument();
+    expect(screen.getByText('Combat pour le bronze')).toBeInTheDocument();
+    expect(screen.getByText('XYZ')).toBeInTheDocument();
   });
 
   it('404 ⇒ "Athlète introuvable", sans section parcours', async () => {

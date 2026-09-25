@@ -45,7 +45,7 @@ function ProfileHeader({ athlete }: { athlete: WtAthleteProfile }) {
       <h1 className="mt-2 break-words font-display text-3xl font-extrabold uppercase leading-none tracking-tight text-ekvara-black sm:text-5xl">
         {athlete.displayName}
       </h1>
-      <p className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-ekvara-muted">
+      <p className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-ekvara-black/55">
         <span className="font-semibold text-ekvara-black">{athlete.countryCode ?? 'Pays non renseigné'}</span>
         {wtSource?.sourceUrl && (
           <a
@@ -65,7 +65,7 @@ function ProfileHeader({ athlete }: { athlete: WtAthleteProfile }) {
         <StatValue value={String(recorded.losses)} label="Défaites" />
         <StatValue value={recorded.winRate === null ? '—' : `${recorded.winRate}%`} label="Taux de victoire" />
       </div>
-      <p className="mt-4 text-xs text-ekvara-muted">
+      <p className="mt-4 text-xs text-ekvara-black/55">
         {formatFightCount(recorded.fights)} {recorded.fights === 1 ? 'recensé' : 'recensés'} dans EKVARA sur{' '}
         {recorded.competitions}{' '}
         {recorded.competitions === 1 ? 'compétition' : 'compétitions'}
@@ -156,7 +156,7 @@ function WtAthletePage({ athleteId }: WtAthletePageProps) {
   return (
     <div className="min-h-screen bg-ekvara-surface">
       <Header />
-      <main className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
+      <main className="mx-auto max-w-[54rem] px-4 py-8 sm:px-6">
         <a
           href="/athletes-wt"
           onClick={(event) => handleNavClick(event, '/athletes-wt')}
@@ -182,7 +182,7 @@ function WtAthletePage({ athleteId }: WtAthletePageProps) {
         </div>
 
         {!notFound && (
-          <section className="mt-12">
+          <section className="mt-8">
             <SectionLabel>Parcours</SectionLabel>
 
             {historyLoading && <p className="mt-4 text-sm text-ekvara-muted">Chargement des combats...</p>}
@@ -198,7 +198,7 @@ function WtAthletePage({ athleteId }: WtAthletePageProps) {
             {history.length > 0 && (
               <>
                 {groupByYear(history).map((group) => (
-                  <div key={group.year} className="mt-8">
+                  <div key={group.year} className="mt-4">
                     <p className="font-display text-4xl font-extrabold leading-none tracking-tight text-ekvara-black/15 sm:text-5xl">
                       {group.year}
                     </p>

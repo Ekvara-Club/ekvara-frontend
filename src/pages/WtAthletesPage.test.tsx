@@ -40,21 +40,35 @@ describe('WtAthletesPage — recherche athlètes WT', () => {
     vi.clearAllMocks();
   });
 
-  it('invite à saisir au moins 2 lettres, sans appel backend', () => {
+  it('sans recherche : aide 2 lettres + "Athlètes à découvrir" (tri déterministe backend sort=fights, 6 athlètes), aucune recherche lancée', async () => {
     render(<WtAthletesPage />);
-    expect(screen.getByText('Saisis au moins 2 lettres du nom.')).toBeInTheDocument();
-    expect(api.searchWtAthletes).not.toHaveBeenCalled();
+
+    expect(screen.getByText('Au moins 2 lettres du nom pour lancer la recherche.')).toBeInTheDocument();
+    expect(screen.getByText('Athlètes à découvrir')).toBeInTheDocument();
+    expect(await screen.findByRole('link', { name: /Kim TAEHUN/ })).toHaveAttribute('href', '/athletes-wt/ath-1');
+    expect(api.searchWtAthletes).toHaveBeenCalledTimes(1);
+    expect(api.searchWtAthletes).toHaveBeenCalledWith({ page: 1, limit: 6, sort: 'fights' });
+    expect(screen.queryByText(/^Résultats/)).not.toBeInTheDocument();
+  });
+
+  it('découverte indisponible ⇒ message discret, la recherche reste utilisable', async () => {
+    api.searchWtAthletes.mockRejectedValueOnce(new Error('Failed to fetch'));
+    render(<WtAthletesPage />);
+
+    expect(await screen.findByText('Suggestions indisponibles pour le moment.')).toBeInTheDocument();
+    expect(screen.getByLabelText('Rechercher un athlète')).toBeEnabled();
   });
 
   it('recherche paginée côté backend ; chaque résultat = nom, NOC, combats, lien vers le profil WT ; ?q= dans l’URL', async () => {
     render(<WtAthletesPage />);
     await userEvent.type(screen.getByLabelText('Rechercher un athlète'), 'kim');
 
-    expect(await screen.findByRole('link', { name: /Kim TAEHUN/ })).toHaveAttribute('href', '/athletes-wt/ath-1');
+    expect(await screen.findByText('Résultats · 2')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Kim TAEHUN/ })).toHaveAttribute('href', '/athletes-wt/ath-1');
     expect(screen.getByText('KOR · 12 combats')).toBeInTheDocument();
-    // Pays absent : jamais inventé.
-    expect(screen.getByText('1 combat')).toBeInTheDocument();
-    expect(screen.getByText('2 athlètes')).toBeInTheDocument();
+    // Pays absent : jamais inventé (ligne mobile sans NOC, colonne desktop "—").
+    expect(screen.getAllByText('1 combat').length).toBeGreaterThan(0);
+    expect(screen.queryByText('Athlètes à découvrir')).not.toBeInTheDocument();
     expect(api.searchWtAthletes).toHaveBeenLastCalledWith({ search: 'kim', page: 1, limit: 20 });
     expect(window.location.search).toBe('?q=kim');
   });
@@ -86,6 +100,8 @@ describe('WtAthletesPage — recherche athlètes WT', () => {
 
   it('"Voir plus" charge la page suivante', async () => {
     api.searchWtAthletes
+      // 1er appel = liste de découverte au montage (aucune recherche active)
+      .mockResolvedValueOnce({ ...RESULT, items: [], total: 0 })
       .mockResolvedValueOnce({ ...RESULT, items: [RESULT.items[0]], total: 2 })
       .mockResolvedValueOnce({ ...RESULT, items: [RESULT.items[1]], total: 2, page: 2 });
     render(<WtAthletesPage />);

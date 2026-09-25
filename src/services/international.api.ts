@@ -12,16 +12,17 @@ export const WT_ATHLETE_NOT_FOUND_MESSAGE = 'Athlète introuvable.';
 
 // Catalogue public World Taekwondo (JwtAuthGuard seul côté backend) : jamais
 // scopé sur l'athlète connecté.
+// sort 'fights' : combats recensés décroissants puis nom (liste de découverte
+// déterministe) ; défaut backend : ordre alphabétique.
 export async function searchWtAthletes(params: {
-  search: string;
+  search?: string;
   page: number;
   limit: number;
+  sort?: 'name' | 'fights';
 }): Promise<WtPaginated<WtAthleteSearchItem>> {
-  const query = new URLSearchParams({
-    search: params.search,
-    page: String(params.page),
-    limit: String(params.limit),
-  });
+  const query = new URLSearchParams({ page: String(params.page), limit: String(params.limit) });
+  if (params.search) query.set('search', params.search);
+  if (params.sort) query.set('sort', params.sort);
   const response = await apiFetch(`/international-athletes?${query.toString()}`);
 
   if (!response.ok) {

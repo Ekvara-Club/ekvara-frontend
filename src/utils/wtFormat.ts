@@ -32,21 +32,23 @@ export function formatCompetitionLocation(competition: Pick<WtCompetitionRef, 'v
   return [competition.ville, competition.pays].filter(Boolean).join(', ') || null;
 }
 
-// Tours du tableau tels que publiés par WT Results. Un tour inconnu reste
-// affiché tel quel ; un tour absent n'est jamais inventé.
+// Tours du tableau publiés par WT Results, avec leur libellé français. Seuls
+// les codes réellement observés et compris sont traduits (BMC = combat pour la
+// médaille de bronze) ; tout autre code est affiché tel que stocké, et un tour
+// absent n'est jamais inventé.
 const STAGE_LABELS: Record<string, string> = {
   F: 'Finale',
-  SF: 'Demi',
-  BMC: 'Bronze',
-  QF: 'Quart',
-  R16: '1/8',
-  R32: '1/16',
-  R64: '1/32',
-  R128: '1/64',
+  SF: 'Demi-finale',
+  BMC: 'Combat pour le bronze',
+  QF: 'Quart de finale',
+  R16: '1/8 de finale',
+  R32: '1/16 de finale',
+  R64: '1/32 de finale',
+  R128: '1/64 de finale',
 };
 
 export function formatStage(stage: string | null): string | null {
-  if (stage === null || stage === '') return null;
+  if (stage === null || stage.trim() === '') return null;
   return STAGE_LABELS[stage] ?? stage;
 }
 
