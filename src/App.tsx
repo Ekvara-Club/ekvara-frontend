@@ -11,6 +11,8 @@ import GoalsPage from './pages/GoalsPage';
 import ProgressPage from './pages/ProgressPage';
 import CompetitionPage from './pages/CompetitionPage';
 import CompetitionsPage from './pages/CompetitionsPage';
+import WtAthletesPage from './pages/WtAthletesPage';
+import WtAthletePage from './pages/WtAthletePage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 
@@ -88,6 +90,18 @@ function ProtectedRoutes({ pathname }: { pathname: string }) {
 
   if (pathname === '/competitions') {
     return <CompetitionsPage />;
+  }
+
+  // Athlètes publics World Taekwondo (external_athlete) : routes distinctes de
+  // tout profil athlète EKVARA. key = id : naviguer d'un adversaire à l'autre
+  // remonte la page (aucune donnée du profil précédent conservée).
+  if (pathname === '/athletes-wt') {
+    return <WtAthletesPage />;
+  }
+
+  const wtAthleteMatch = pathname.match(/^\/athletes-wt\/([^/]+)$/);
+  if (wtAthleteMatch) {
+    return <WtAthletePage key={wtAthleteMatch[1]} athleteId={wtAthleteMatch[1]} />;
   }
 
   const competitionMatch = pathname.match(/^\/competitions\/([^/]+)$/);

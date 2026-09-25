@@ -14,6 +14,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: 'Accueil', href: '/' },
   { label: 'Activité', href: '/activite' },
   { label: 'Compétitions', href: '/competitions' },
+  { label: 'Athlètes WT', href: '/athletes-wt' },
   { label: 'Exercices', href: '/exercices' },
 ];
 
