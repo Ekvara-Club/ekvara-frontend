@@ -42,14 +42,9 @@ function metric(overrides: Partial<MetricOverviewEntry> = {}): MetricOverviewEnt
   };
 }
 
-// Valeur affichée au-dessus d'un label de StatValue (ex. "Victoires" -> "03").
-function stat(label: string): string | null | undefined {
-  return within(record()).getByText(label).previousElementSibling?.textContent;
-}
-const record = () => screen.getByText('Record').parentElement!;
 const palmares = () => screen.getByText('Palmarès').parentElement!;
 
-describe('PassportPage — statistiques carrière, palmarès, saisie résultat', () => {
+describe('PassportPage — palmarès, saisie résultat', () => {
   beforeEach(() => {
     vi.useFakeTimers({ toFake: ['Date'] });
     vi.setSystemTime(new Date(2026, 8, 21));
@@ -63,7 +58,7 @@ describe('PassportPage — statistiques carrière, palmarès, saisie résultat',
     vi.clearAllMocks();
   });
 
-  it('stats calculées uniquement sur les compétitions passées avec un signal de résultat ; futures exclues du palmarès', async () => {
+  it('palmarès : compétitions passées seulement (résultat ou « non renseigné »), futures exclues ; plus de section Record', async () => {
     api.getCompetitions.mockResolvedValue([
       participation({ id: 'p-belgian', competition: BELGIAN_OPEN, classement: 3, medaille: 'bronze', victoires: 3, defaites: 1 }),
       // Passée mais sans aucun signal (victoires/défaites à 0) : jamais "disputée".
@@ -74,10 +69,10 @@ describe('PassportPage — statistiques carrière, palmarès, saisie résultat',
     render(<PassportPage />);
 
     expect(await within(palmares()).findByText('Belgian Open')).toBeInTheDocument();
-    expect(stat('Compétition disputée')).toBe('01');
-    expect(stat('Victoires')).toBe('03');
-    expect(stat('Défaite')).toBe('01');
-    expect(stat('Podium')).toBe('01');
+    // Section « Record » (disputées / victoires / défaites / podiums)
+    // retirée du Passeport à la demande de Kaïs : jamais réaffichée.
+    expect(screen.queryByText('Record')).not.toBeInTheDocument();
+    expect(screen.queryByText(/^Podiums?$/)).not.toBeInTheDocument();
 
     expect(within(palmares()).getByText('3E')).toBeInTheDocument();
     expect(within(palmares()).getByText('Bronze')).toBeInTheDocument();
@@ -86,7 +81,7 @@ describe('PassportPage — statistiques carrière, palmarès, saisie résultat',
     expect(within(palmares()).queryByText('Championnat de France seniors')).not.toBeInTheDocument();
   });
 
-  it('progression en erreur : profil, stats et palmarès restent utilisables', async () => {
+  it('progression en erreur : profil et palmarès restent utilisables', async () => {
     api.getCompetitions.mockResolvedValue([participation({ competition: BELGIAN_OPEN, classement: 1 })]);
     api.getMetricsOverview.mockRejectedValue(new Error('Failed to fetch'));
     vi.spyOn(console, 'error').mockImplementation(() => {});
@@ -104,13 +99,12 @@ describe('PassportPage — statistiques carrière, palmarès, saisie résultat',
     vi.spyOn(console, 'error').mockImplementation(() => {});
     render(<PassportPage />);
 
-    expect(await screen.findByText('Impossible de charger les statistiques pour le moment.')).toBeInTheDocument();
-    expect(screen.getByText('Impossible de charger le palmarès pour le moment.')).toBeInTheDocument();
+    expect(await screen.findByText('Impossible de charger le palmarès pour le moment.')).toBeInTheDocument();
     expect(screen.getByText('Temps de réaction')).toBeInTheDocument();
     expect(screen.getByText(/En progression/)).toBeInTheDocument();
   });
 
-  it('renseigner un résultat : PATCH avec victoires/défaites à 0 conservés, puis stats et palmarès recalculés sans reload', async () => {
+  it('renseigner un résultat : PATCH avec victoires/défaites à 0 conservés, puis palmarès recalculé sans reload', async () => {
     const before = participation({ competition: DUTCH_OPEN, victoires: 0, defaites: 0 });
     const after = { ...before, classement: 1, medaille: 'or' };
     api.getCompetitions.mockResolvedValueOnce([before]).mockResolvedValueOnce([after]);
@@ -132,7 +126,6 @@ describe('PassportPage — statistiques carrière, palmarès, saisie résultat',
     expect(await within(palmares()).findByText('1ER')).toBeInTheDocument();
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     expect(api.getCompetitions).toHaveBeenCalledTimes(2);
-    expect(stat('Podium')).toBe('01');
   });
 
   it('choisir "Aucune" sur une médaille existante envoie medaille: null (retrait explicite, jamais omis)', async () => {

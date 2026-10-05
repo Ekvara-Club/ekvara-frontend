@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import Header from '../components/layout/Header';
 import AthleteProfileCard from '../components/passport/AthleteProfileCard';
-import CareerStats from '../components/passport/CareerStats';
 import MetricsOverview from '../components/passport/MetricsOverview';
 import PalmaresList from '../components/passport/PalmaresList';
 import ConditionStatus from '../components/condition/ConditionStatus';
@@ -27,8 +26,8 @@ function PassportPage() {
 
   // Réutilisée à la fois par l'effet initial et par le rafraîchissement
   // immédiat après l'enregistrement d'un résultat de compétition — sans
-  // window.location.reload(), Statistiques et Palmarès se recalculent dès que
-  // les nouvelles participations arrivent (tous deux dérivés de ce même state).
+  // window.location.reload(), le Palmarès se recalcule dès que
+  // les nouvelles participations arrivent (dérivé de ce même state).
   function loadParticipations(isCancelled: () => boolean) {
     setParticipationsLoading(true);
     setParticipationsError(null);
@@ -49,7 +48,7 @@ function PassportPage() {
   }
 
   // Indépendant de la progression : une erreur ici ne doit pas empêcher le
-  // Profil ou la Progression de fonctionner (alimente Statistiques + Palmarès).
+  // Profil ou la Progression de fonctionner (alimente le Palmarès).
   useEffect(() => {
     let cancelled = false;
     loadParticipations(() => cancelled);
@@ -60,7 +59,7 @@ function PassportPage() {
   }, [athleteId]);
 
   // Indépendant des compétitions : une erreur ici ne doit pas empêcher le
-  // Profil, les Statistiques ou le Palmarès de fonctionner.
+  // Profil ou le Palmarès de fonctionner.
   useEffect(() => {
     let cancelled = false;
 
@@ -110,14 +109,6 @@ function PassportPage() {
               }
             />
           </div>
-
-          <section className="border-t border-gray-200 pt-8">
-            <CareerStats
-              participations={participations}
-              loading={participationsLoading}
-              error={participationsError}
-            />
-          </section>
 
           <section className="border-t border-gray-200 pt-8">
             <MetricsOverview metrics={metrics} loading={metricsLoading} error={metricsError} />

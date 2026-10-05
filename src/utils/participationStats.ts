@@ -39,21 +39,3 @@ export function isPodium(participation: ParticipationListItem): boolean {
     participation.classement !== null && participation.classement >= 1 && participation.classement <= 3;
   return hasTopClassement || participation.medaille !== null;
 }
-
-export interface CareerStatsSummary {
-  disputed: number;
-  wins: number;
-  losses: number;
-  podiums: number;
-}
-
-export function computeCareerStats(participations: ParticipationListItem[]): CareerStatsSummary {
-  const disputed = participations.filter((p) => isPastParticipation(p) && hasCompetitionResult(p));
-
-  return {
-    disputed: disputed.length,
-    wins: disputed.reduce((sum, p) => sum + (p.victoires ?? 0), 0),
-    losses: disputed.reduce((sum, p) => sum + (p.defaites ?? 0), 0),
-    podiums: disputed.filter(isPodium).length,
-  };
-}
