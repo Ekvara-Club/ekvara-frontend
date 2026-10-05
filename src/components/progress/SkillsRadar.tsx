@@ -11,7 +11,7 @@ const RINGS = [25, 50, 75, 100];
 const MIN_AXES = 3;
 // Marge horizontale pour les libellés des branches latérales (« Temps de
 // réaction ») : jamais coupés par le cadre du SVG.
-const LABEL_PAD = 80;
+const LABEL_PAD = 110;
 
 function point(index: number, count: number, score: number): [number, number] {
   // Première branche en haut, puis sens horaire.
@@ -50,7 +50,7 @@ function SkillsRadar({ metrics }: SkillsRadarProps) {
     <figure className="flex flex-col items-center">
       <svg
         viewBox={`${-LABEL_PAD} 0 ${SIZE + 2 * LABEL_PAD} ${SIZE}`}
-        className="w-full max-w-[440px]"
+        className="w-full max-w-[480px]"
         role="img"
         aria-label={`Étoile de compétences : ${summary}`}
       >
@@ -93,9 +93,9 @@ function SkillsRadar({ metrics }: SkillsRadarProps) {
           const [x, y] = point(i, axes.length, 124);
           const anchor = Math.abs(x - CENTER) < 4 ? 'middle' : x > CENTER ? 'start' : 'end';
           return (
-            <text key={m.id} x={x} y={y} textAnchor={anchor} dominantBaseline="middle" className="fill-ekvara-black text-[10px] font-semibold uppercase">
+            <text key={m.id} x={x} y={y} textAnchor={anchor} dominantBaseline="middle" className="fill-ekvara-black text-[13px] font-semibold uppercase">
               <tspan>{m.name}</tspan>
-              <tspan x={x} dy={12} className="fill-ekvara-black/60 font-normal normal-case">
+              <tspan x={x} dy={15} className="fill-ekvara-black/60 text-[12px] font-normal normal-case">
                 {m.score}/100
               </tspan>
             </text>

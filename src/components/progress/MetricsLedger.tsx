@@ -49,7 +49,7 @@ function MetricRow({
         type="button"
         onClick={onSelect}
         aria-current={selected ? 'true' : undefined}
-        className={`grid w-full grid-cols-[16px_1fr] items-start gap-x-3 gap-y-1.5 border-l-2 py-4 pl-4 pr-2 text-left transition-colors sm:grid-cols-[16px_1fr_auto_auto] sm:items-center sm:gap-x-6 ${
+        className={`grid w-full grid-cols-[16px_1fr] items-start gap-x-3 gap-y-1.5 border-l-2 py-4 pl-4 pr-2 text-left transition-colors sm:grid-cols-[16px_1fr_7rem_13rem] sm:items-center sm:gap-x-6 ${
           selected ? 'border-ekvara-black' : 'border-transparent hover:bg-gray-50'
         }`}
       >
@@ -66,7 +66,7 @@ function MetricRow({
           <p className="col-start-2 text-sm text-ekvara-muted sm:col-start-3">Pas encore évaluée</p>
         ) : (
           <>
-            <p className="col-start-2 font-display text-lg font-bold text-ekvara-black sm:col-start-3 sm:text-right">
+            <p className="col-start-2 font-display text-lg font-bold tabular-nums text-ekvara-black sm:col-start-3 sm:text-right">
               {currentValue}
               {unit && <span className="ml-1 font-sans text-xs font-normal text-ekvara-muted">{unit}</span>}
             </p>

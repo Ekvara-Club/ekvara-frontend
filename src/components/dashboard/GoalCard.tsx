@@ -41,7 +41,7 @@ function getDaysUntilLabel(dateCible: string): string | null {
 
 function GoalCard({ goal, loading, error }: GoalCardProps) {
   return (
-    <div className="min-h-[240px] rounded-lg border border-gray-200 bg-white p-5 shadow-sm">
+    <div className="flex min-h-[240px] flex-col rounded-lg border border-gray-200 bg-white p-5 shadow-sm sm:p-6">
       <SectionLabel>Objectif</SectionLabel>
 
       {loading && <p className="mt-6 text-sm text-ekvara-muted">Chargement...</p>}
@@ -60,7 +60,7 @@ function GoalCard({ goal, loading, error }: GoalCardProps) {
       )}
 
       {!loading && !error && goal && (
-        <div className="mt-4 flex flex-col gap-4">
+        <div className="mt-4 flex flex-1 flex-col gap-4">
           <div>
             <div className="flex items-start justify-between gap-3">
               <h3 className="font-display text-xl font-bold leading-snug text-ekvara-black">
@@ -117,7 +117,7 @@ function GoalCard({ goal, loading, error }: GoalCardProps) {
             </div>
           )}
 
-          <Button variant="ghost" onClick={() => navigateTo('/objectifs')} className="group mt-1 self-start">
+          <Button variant="ghost" onClick={() => navigateTo('/objectifs')} className="group mt-auto self-start pt-1">
             Voir les objectifs
             <span className="inline-block transition-transform group-hover:translate-x-0.5">→</span>
           </Button>

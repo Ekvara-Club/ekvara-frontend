@@ -344,10 +344,10 @@ function CompetitionsPage() {
       <Header />
 
       <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
-        <h1 className="font-display text-3xl font-extrabold uppercase tracking-tight text-ekvara-black sm:text-4xl">
+        <h1 className="font-display text-3xl font-extrabold tracking-tight text-ekvara-black">
           Compétitions
         </h1>
-        <p className="mt-2 text-sm text-ekvara-muted">
+        <p className="mt-1 text-ekvara-muted">
           Trouve tes prochaines échéances et explore le calendrier.
         </p>
 
@@ -379,9 +379,9 @@ function CompetitionsPage() {
                   onClick={() => {
                     if (!active) setFilters({ ...filters, status: option.value });
                   }}
-                  className={`border-b-2 pb-0.5 text-sm transition-colors ${
+                  className={`border-b py-2.5 text-sm transition-colors ${
                     active
-                      ? 'border-ekvara-lime font-semibold text-ekvara-black'
+                      ? 'border-ekvara-black font-semibold text-ekvara-black'
                       : 'border-transparent font-medium text-ekvara-black/50 hover:text-ekvara-black'
                   }`}
                 >

@@ -33,9 +33,6 @@ function formatTooltipDate(dateString: string): string {
   return new Date(dateString).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
 }
 
-function round2(value: number): number {
-  return Math.round(value * 100) / 100;
-}
 
 function CustomTooltip({ active, payload, unit }: TooltipContentProps & { unit: string | null }) {
   if (!active || !payload || payload.length === 0) return null;
@@ -75,8 +72,11 @@ function MetricHistoryChart({ measurements, unit, positive }: MetricHistoryChart
   // Si toutes les valeurs sont identiques (spread = 0), une marge minimale
   // basée sur la valeur elle-même évite un axe plat/amplitude nulle.
   const padding = spread > 0 ? spread * 0.15 : Math.max(Math.abs(max) * MIN_DOMAIN_PADDING_RATIO, 1);
-  const domain: [number, number] = [round2(min - padding), round2(max + padding)];
-  const lineColor = positive ? LINE_COLOR_POSITIVE : LINE_COLOR_NEUTRAL;
+  // Bornes entières : graduations régulières et lisibles.
+  const domain: [number, number] = [Math.floor(min - padding), Math.ceil(max + padding)];
+  // Courbe toujours noire (le lime est invisible sur la surface claire) ;
+  // la progression reste signalée par le remplissage lime des points.
+  const pointColor = positive ? LINE_COLOR_POSITIVE : LINE_COLOR_NEUTRAL;
 
   return (
     <div className="h-[260px] w-full sm:h-[320px]">
@@ -88,9 +88,13 @@ function MetricHistoryChart({ measurements, unit, positive }: MetricHistoryChart
             tick={{ fontSize: 12, fontFamily: 'Manrope, sans-serif', fill: '#A3A3A3' }}
             axisLine={{ stroke: '#e5e7eb' }}
             tickLine={false}
+            tickMargin={8}
+            padding={{ left: 12, right: 12 }}
           />
           <YAxis
             domain={domain}
+            tickCount={5}
+            allowDecimals={false}
             tick={{ fontSize: 12, fontFamily: 'Manrope, sans-serif', fill: '#A3A3A3' }}
             tickFormatter={(value: number) => formatValue(value)}
             width={45}
@@ -101,10 +105,10 @@ function MetricHistoryChart({ measurements, unit, positive }: MetricHistoryChart
           <Line
             type="monotone"
             dataKey="value"
-            stroke={lineColor}
-            strokeWidth={2.5}
-            dot={{ r: 3, fill: lineColor, stroke: '#090909', strokeWidth: 1 }}
-            activeDot={{ r: 5, fill: lineColor, stroke: '#090909', strokeWidth: 1.5 }}
+            stroke={LINE_COLOR_NEUTRAL}
+            strokeWidth={2}
+            dot={{ r: 3.5, fill: pointColor, stroke: '#090909', strokeWidth: 1 }}
+            activeDot={{ r: 5, fill: pointColor, stroke: '#090909', strokeWidth: 1.5 }}
           />
         </LineChart>
       </ResponsiveContainer>

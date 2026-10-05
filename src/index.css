@@ -7,10 +7,23 @@
     @apply bg-ekvara-surface font-sans text-ekvara-black antialiased;
   }
 
-  /* Focus clavier identifiable, cohérent avec l'accent EKVARA (§13/§16) —
-     global et non-intrusif : invisible tant qu'on ne navigue pas au clavier. */
+  /* Focus clavier : anneau noir (contraste suffisant sur la surface claire,
+     WCAG 1.4.11 — le lime seul donnait ~1,1:1) + halo lime, visible aussi
+     sur les fonds noirs. Invisible tant qu'on ne navigue pas au clavier. */
   :focus-visible {
-    outline: 2px solid #d9ff43;
+    outline: 2px solid #090909;
     outline-offset: 2px;
+    box-shadow: 0 0 0 4px #d9ff43;
   }
+}
+
+/* Champs de saisie : la classe utilitaire `outline-none` (présente sur la
+   plupart des champs) neutralise le contour de :focus-visible. Placée après
+   les utilitaires Tailwind, cette règle rend le focus d'un champ toujours
+   identifiable (bordure + anneau noirs), au clavier comme à la souris. */
+input.outline-none:focus,
+select.outline-none:focus,
+textarea.outline-none:focus {
+  border-color: #090909;
+  box-shadow: 0 0 0 1px #090909;
 }

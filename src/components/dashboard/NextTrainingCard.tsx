@@ -53,7 +53,7 @@ function NextTrainingCard({ training, loading, error, onAdd }: NextTrainingCardP
   const isToday = status === "Aujourd'hui";
 
   return (
-    <div className="min-h-[240px] rounded-lg border border-gray-200 bg-white p-5 shadow-sm sm:p-6">
+    <div className="flex min-h-[240px] flex-col rounded-lg border border-gray-200 bg-white p-5 shadow-sm sm:p-6">
       <SectionLabel>Prochain entraînement</SectionLabel>
 
       {loading && <p className="mt-6 text-sm text-ekvara-muted">Chargement...</p>}
@@ -77,7 +77,7 @@ function NextTrainingCard({ training, loading, error, onAdd }: NextTrainingCardP
       )}
 
       {!loading && !error && training && (
-        <div className="mt-4 flex flex-col gap-4">
+        <div className="mt-4 flex flex-1 flex-col gap-4">
           <div className="flex items-start justify-between gap-3">
             <h3 className="text-lg font-bold text-ekvara-black">{training.title}</h3>
             {status && (
@@ -114,7 +114,7 @@ function NextTrainingCard({ training, loading, error, onAdd }: NextTrainingCardP
             </p>
           )}
 
-          <Button variant="ghost" onClick={() => navigateTo('/activite')} className="group mt-1 self-start">
+          <Button variant="ghost" onClick={() => navigateTo('/activite')} className="group mt-auto self-start pt-1">
             Voir les activités
             <span className="inline-block transition-transform group-hover:translate-x-0.5">→</span>
           </Button>

@@ -124,7 +124,7 @@ function NotificationBell() {
         aria-label="Notifications"
         aria-haspopup="true"
         aria-expanded={isOpen}
-        className={`relative flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full text-ekvara-black transition-colors hover:bg-gray-100 ${
+        className={`relative flex h-11 w-11 flex-shrink-0 sm:h-9 sm:w-9 items-center justify-center rounded-full text-ekvara-black transition-colors hover:bg-gray-100 ${
           isOpen ? 'bg-gray-100' : ''
         }`}
       >

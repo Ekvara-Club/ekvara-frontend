@@ -439,7 +439,7 @@ function CompetitionPage({ competitionId }: CompetitionPageProps) {
                 cette page — le reste (participation/résultat) reste éditorial. */}
             <div className="mt-6 rounded-lg bg-ekvara-black p-6 sm:p-8">
               <div className="flex items-start justify-between gap-3">
-                <p className="text-xs font-semibold uppercase tracking-wide text-white/40">Compétition</p>
+                <p className="text-xs font-semibold uppercase tracking-wide text-white/60">Compétition</p>
                 {daysUntilLabel && (
                   <span className="whitespace-nowrap rounded-full bg-ekvara-lime px-3 py-1 font-display text-sm font-extrabold text-ekvara-black">
                     {daysUntilLabel}
@@ -462,15 +462,15 @@ function CompetitionPage({ competitionId }: CompetitionPageProps) {
               )}
 
               {heroMetaLine && (
-                <p className="mt-3 text-xs font-semibold uppercase tracking-wide text-white/40">{heroMetaLine}</p>
+                <p className="mt-3 text-xs font-semibold uppercase tracking-wide text-white/60">{heroMetaLine}</p>
               )}
 
               {(competition.lieu || competition.saison || competition.source) && (
-                <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-white/30">
+                <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-white/50">
                   {competition.lieu && <span>{competition.lieu}</span>}
                   {competition.saison && <span>Saison {competition.saison}</span>}
                   {competition.source && (
-                    <span className="capitalize">{competition.source.replace(/_/g, ' ')}</span>
+                    <span>{formatSourceLabel(competition.source)}</span>
                   )}
                 </div>
               )}
@@ -507,7 +507,7 @@ function CompetitionPage({ competitionId }: CompetitionPageProps) {
                         value={cell.value}
                         label={cell.label}
                         size="md"
-                        className="uppercase sm:px-6 sm:first:pl-0"
+                        className="sm:px-6 sm:first:pl-0"
                       />
                     ))}
                   </div>

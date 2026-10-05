@@ -25,9 +25,6 @@ function formatTooltipDate(dateString: string): string {
   return new Date(dateString).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
 }
 
-function round2(value: number): number {
-  return Math.round(value * 100) / 100;
-}
 
 function WeightChart({ logs, target }: WeightChartProps) {
   // Le backend renvoie measuredAt DESC (pour l'historique) : tableau dérivé
@@ -45,7 +42,8 @@ function WeightChart({ logs, target }: WeightChartProps) {
   // échelle 0-75. Marge proportionnelle à l'amplitude réelle, avec un plancher
   // pour rester lisible même quand toutes les valeurs sont proches.
   const padding = Math.max(MIN_DOMAIN_PADDING_KG, (max - min) * 0.15);
-  const domain: [number, number] = [round2(min - padding), round2(max + padding)];
+  // Bornes entières : graduations régulières et lisibles (jamais 72,37).
+  const domain: [number, number] = [Math.floor(min - padding), Math.ceil(max + padding)];
 
   return (
     <div className="h-[280px] w-full sm:h-[340px]">
@@ -57,9 +55,13 @@ function WeightChart({ logs, target }: WeightChartProps) {
             tick={{ fontSize: 12, fontFamily: 'Manrope, sans-serif', fill: '#A3A3A3' }}
             axisLine={{ stroke: '#e5e7eb' }}
             tickLine={false}
+            tickMargin={8}
+            padding={{ left: 12, right: 12 }}
           />
           <YAxis
             domain={domain}
+            tickCount={5}
+            allowDecimals={false}
             tick={{ fontSize: 12, fontFamily: 'Manrope, sans-serif', fill: '#A3A3A3' }}
             tickFormatter={(value: number) => formatWeight(value)}
             width={45}
@@ -98,8 +100,8 @@ function WeightChart({ logs, target }: WeightChartProps) {
           <Line
             type="monotone"
             dataKey="weight"
-            stroke="#D9FF43"
-            strokeWidth={2.5}
+            stroke="#090909"
+            strokeWidth={2}
             dot={{ r: 3, fill: '#D9FF43', stroke: '#090909', strokeWidth: 1 }}
             activeDot={{ r: 5, fill: '#D9FF43', stroke: '#090909', strokeWidth: 1.5 }}
           />

@@ -46,7 +46,7 @@ function getWeeklyChangeLabel(weeklyChange: number): string {
 
 function WeightCard({ summary, loading, error, onAdd }: WeightCardProps) {
   return (
-    <div className="min-h-[240px] rounded-lg border border-gray-200 bg-white p-5 shadow-sm">
+    <div className="flex min-h-[240px] flex-col rounded-lg border border-gray-200 bg-white p-5 shadow-sm sm:p-6">
       <SectionLabel>Poids</SectionLabel>
 
       {loading && <p className="mt-6 text-sm text-ekvara-muted">Chargement...</p>}
@@ -70,7 +70,7 @@ function WeightCard({ summary, loading, error, onAdd }: WeightCardProps) {
       )}
 
       {!loading && !error && summary && summary.currentWeight !== null && (
-        <div className="mt-4 flex flex-col gap-4">
+        <div className="mt-4 flex flex-1 flex-col gap-4">
           <div>
             <StatValue value={formatWeight(summary.currentWeight)} label="kg" />
             {summary.measuredAt && (
@@ -107,7 +107,7 @@ function WeightCard({ summary, loading, error, onAdd }: WeightCardProps) {
             <p className="text-sm text-ekvara-black/70">{getWeeklyChangeLabel(summary.weeklyChange)}</p>
           )}
 
-          <Button variant="ghost" onClick={() => navigateTo('/poids')} className="group mt-1 self-start">
+          <Button variant="ghost" onClick={() => navigateTo('/poids')} className="group mt-auto self-start pt-1">
             Voir mon poids
             <span className="inline-block transition-transform group-hover:translate-x-0.5">→</span>
           </Button>

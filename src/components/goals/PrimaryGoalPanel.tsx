@@ -111,7 +111,7 @@ function PrimaryGoalPanel({ athleteId, goal, onChanged }: PrimaryGoalPanelProps)
       )}
 
       <div className="mt-2 flex items-start justify-between gap-4">
-        <h2 className="font-display text-3xl font-extrabold tracking-tight text-ekvara-black sm:text-4xl">
+        <h2 className="text-balance font-display text-2xl font-extrabold tracking-tight text-ekvara-black sm:text-3xl">
           {goal.titre}
         </h2>
 
@@ -122,7 +122,7 @@ function PrimaryGoalPanel({ athleteId, goal, onChanged }: PrimaryGoalPanelProps)
             aria-label="Actions sur l'objectif"
             aria-haspopup="true"
             aria-expanded={isMenuOpen}
-            className="rounded-md p-1.5 text-ekvara-muted transition-colors hover:bg-gray-100 hover:text-ekvara-black"
+            className="-mr-2 flex h-11 w-11 items-center justify-center rounded-md text-xl text-ekvara-black/55 transition-colors hover:bg-gray-100 hover:text-ekvara-black"
           >
             ⋯
           </button>

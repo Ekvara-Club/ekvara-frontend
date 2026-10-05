@@ -76,20 +76,20 @@ function Header() {
           EKVARA
         </span>
 
-        {/* flex-wrap + gap-x-4/gap-y-1 (ticket "Compétitions Athlete V2" §3/§33) :
-            un 4e item ("Compétitions") allonge la nav — plutôt que de risquer
-            un débordement/troncature sur 390px, la nav peut se replier sur
-            deux lignes centrées sans jamais couper un libellé. */}
-        <nav className="order-3 flex w-full flex-wrap items-center justify-center gap-x-4 gap-y-1 sm:order-2 sm:w-auto sm:flex-nowrap sm:gap-6">
+        {/* Mobile : une seule ligne qui défile horizontalement (les libellés
+            ne tiennent pas à 375px) plutôt qu'un retour sur deux lignes ;
+            desktop inchangé. Jamais un libellé coupé. */}
+        <nav className="order-3 -mx-4 flex w-[calc(100%+2rem)] flex-nowrap items-center gap-x-5 overflow-x-auto px-4 [scrollbar-width:none] sm:order-2 sm:mx-0 sm:w-auto sm:overflow-visible sm:px-0 sm:gap-6">
           {NAV_ITEMS.map((item) => {
-            const isActive = pathname === item.href;
+            // Actif aussi sur les pages de détail (/competitions/:id…).
+            const isActive = item.href === '/' ? pathname === '/' : pathname.startsWith(item.href);
             return (
               <a
                 key={item.label}
                 href={item.href}
                 onClick={(event) => handleNavClick(event, item.href)}
                 aria-current={isActive ? 'page' : undefined}
-                className={`border-b pb-0.5 text-sm transition-colors ${
+                className={`whitespace-nowrap border-b py-2.5 text-sm transition-colors sm:py-0 sm:pb-0.5 ${
                   isActive
                     ? 'border-ekvara-black font-semibold text-ekvara-black'
                     : 'border-transparent font-medium text-ekvara-black/60 hover:text-ekvara-black'
@@ -111,7 +111,7 @@ function Header() {
               aria-label="Profil utilisateur"
               aria-haspopup="true"
               aria-expanded={isMenuOpen}
-              className={`flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-ekvara-black text-sm font-semibold text-ekvara-surface transition-shadow ${
+              className={`flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-ekvara-black sm:h-9 sm:w-9 text-sm font-semibold text-ekvara-surface transition-shadow ${
                 isMenuOpen ? 'ring-2 ring-ekvara-black/20 ring-offset-2 ring-offset-ekvara-surface' : ''
               }`}
             >

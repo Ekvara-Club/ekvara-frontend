@@ -108,8 +108,8 @@ function ExercisesPage() {
                 aria-pressed={typeFilter === ALL_FILTER_VALUE}
                 className={`rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
                   typeFilter === ALL_FILTER_VALUE
-                    ? 'bg-ekvara-lime text-ekvara-black'
-                    : 'border border-gray-300 bg-white text-ekvara-black/70 hover:bg-gray-50'
+                    ? 'bg-ekvara-black text-ekvara-surface'
+                    : 'border border-gray-300 bg-transparent text-ekvara-black/70 hover:bg-gray-100'
                 }`}
               >
                 Tous
@@ -122,8 +122,8 @@ function ExercisesPage() {
                   aria-pressed={typeFilter === option.value}
                   className={`rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
                     typeFilter === option.value
-                      ? 'bg-ekvara-lime text-ekvara-black'
-                      : 'border border-gray-300 bg-white text-ekvara-black/70 hover:bg-gray-50'
+                      ? 'bg-ekvara-black text-ekvara-surface'
+                      : 'border border-gray-300 bg-transparent text-ekvara-black/70 hover:bg-gray-100'
                   }`}
                 >
                   {option.label}
@@ -141,8 +141,8 @@ function ExercisesPage() {
                 aria-pressed={niveauFilter === ALL_FILTER_VALUE}
                 className={`rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
                   niveauFilter === ALL_FILTER_VALUE
-                    ? 'bg-ekvara-lime text-ekvara-black'
-                    : 'border border-gray-300 bg-white text-ekvara-black/70 hover:bg-gray-50'
+                    ? 'bg-ekvara-black text-ekvara-surface'
+                    : 'border border-gray-300 bg-transparent text-ekvara-black/70 hover:bg-gray-100'
                 }`}
               >
                 Tous
@@ -155,8 +155,8 @@ function ExercisesPage() {
                   aria-pressed={niveauFilter === option.value}
                   className={`rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
                     niveauFilter === option.value
-                      ? 'bg-ekvara-lime text-ekvara-black'
-                      : 'border border-gray-300 bg-white text-ekvara-black/70 hover:bg-gray-50'
+                      ? 'bg-ekvara-black text-ekvara-surface'
+                      : 'border border-gray-300 bg-transparent text-ekvara-black/70 hover:bg-gray-100'
                   }`}
                 >
                   {option.label}

@@ -25,7 +25,7 @@ function formatPercentage(percentage: number): string {
 
 function ProgressCard({ data, loading, error }: ProgressCardProps) {
   return (
-    <div className="min-h-[240px] rounded-lg border border-gray-200 bg-white p-5 shadow-sm">
+    <div className="flex min-h-[240px] flex-col rounded-lg border border-gray-200 bg-white p-5 shadow-sm sm:p-6">
       <SectionLabel>Progression</SectionLabel>
 
       {loading && <p className="mt-6 text-sm text-ekvara-muted">Chargement...</p>}
@@ -44,7 +44,7 @@ function ProgressCard({ data, loading, error }: ProgressCardProps) {
       )}
 
       {!loading && !error && data && data.highlights.length > 0 && (
-        <div className="mt-4 flex flex-col gap-4">
+        <div className="mt-4 flex flex-1 flex-col gap-4">
           <StatValue
             value={String(data.improvedCount)}
             label={`capacité${data.improvedCount > 1 ? 's' : ''} en progression`}
@@ -78,7 +78,7 @@ function ProgressCard({ data, loading, error }: ProgressCardProps) {
             ))}
           </ul>
 
-          <Button variant="ghost" onClick={() => navigateTo('/progression')} className="group mt-1 self-start">
+          <Button variant="ghost" onClick={() => navigateTo('/progression')} className="group mt-auto self-start pt-1">
             Voir ma progression
             <span className="inline-block transition-transform group-hover:translate-x-0.5">→</span>
           </Button>

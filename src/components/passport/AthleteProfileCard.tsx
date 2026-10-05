@@ -19,7 +19,7 @@ function AthleteProfileCard({ user, athlete }: AthleteProfileCardProps) {
 
   return (
     <div className="rounded-lg bg-ekvara-black p-6 sm:p-8">
-      <p className="text-xs font-semibold uppercase tracking-wide text-white/40">Passeport sportif</p>
+      <p className="text-xs font-semibold uppercase tracking-wide text-white/60">Passeport sportif</p>
 
       {fullName && (
         <h1 className="mt-2 font-display text-3xl font-extrabold tracking-tight text-white sm:text-4xl">

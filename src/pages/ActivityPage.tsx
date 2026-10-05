@@ -268,7 +268,7 @@ function ActivityPage() {
           <button
             type="button"
             onClick={() => setAnchorDate(new Date())}
-            className="text-xs font-semibold uppercase tracking-wide text-ekvara-muted transition-colors hover:text-ekvara-black"
+            className="py-3 text-xs font-semibold uppercase tracking-wide text-ekvara-black/55 transition-colors hover:text-ekvara-black"
           >
             Aujourd'hui
           </button>
@@ -280,18 +280,18 @@ function ActivityPage() {
               type="button"
               onClick={() => setAnchorDate((current) => addWeeks(current, -1))}
               aria-label="Semaine précédente"
-              className="px-1 text-ekvara-muted transition-colors hover:text-ekvara-black"
+              className="-mx-2 flex h-11 w-11 items-center justify-center text-ekvara-muted transition-colors hover:text-ekvara-black"
             >
               ←
             </button>
-            <p className="font-display text-lg font-bold uppercase tracking-wide text-ekvara-black">
+            <p className="min-w-[15ch] text-center font-display text-lg font-bold uppercase tracking-wide tabular-nums text-ekvara-black">
               {formatWeekLabel(monday, sunday)}
             </p>
             <button
               type="button"
               onClick={() => setAnchorDate((current) => addWeeks(current, 1))}
               aria-label="Semaine suivante"
-              className="px-1 text-ekvara-muted transition-colors hover:text-ekvara-black"
+              className="-mx-2 flex h-11 w-11 items-center justify-center text-ekvara-muted transition-colors hover:text-ekvara-black"
             >
               →
             </button>

@@ -52,7 +52,7 @@ function GoalRoadmap({ athleteId, goalId, steps, finalLabel, onChanged }: GoalRo
                   ? `Marquer "${step.titre}" comme non terminée`
                   : `Marquer "${step.titre}" comme terminée`
               }
-              className={`absolute left-0 top-0 flex h-6 w-6 items-center justify-center rounded-full border-2 text-xs font-bold disabled:cursor-not-allowed disabled:opacity-60 ${
+              className={`absolute left-0 top-0 flex h-6 w-6 items-center justify-center rounded-full border-2 text-xs font-bold before:absolute before:-inset-2.5 before:content-[''] disabled:cursor-not-allowed disabled:opacity-60 ${
                 step.completed
                   ? 'border-ekvara-lime bg-ekvara-lime text-ekvara-black'
                   : 'border-gray-300 bg-white text-transparent hover:border-gray-400'

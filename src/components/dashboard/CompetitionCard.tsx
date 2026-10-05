@@ -71,10 +71,10 @@ function CompetitionCard({ competition, loading, error, onAdd }: CompetitionCard
           .join(' · ');
 
     return (
-      <div className="flex min-h-[240px] flex-col justify-between rounded-lg bg-ekvara-black p-6 sm:p-7">
+      <div className="flex min-h-[240px] flex-col justify-between rounded-lg bg-ekvara-black p-5 sm:p-6">
         <div>
           <div className="flex items-start justify-between gap-3">
-            <p className="text-xs font-semibold uppercase tracking-wide text-white/40">
+            <p className="text-xs font-semibold uppercase tracking-wide text-white/60">
               Prochaine compétition
             </p>
             <span className="whitespace-nowrap rounded-full bg-ekvara-lime px-3 py-1 font-display text-sm font-extrabold text-ekvara-black">
@@ -82,7 +82,7 @@ function CompetitionCard({ competition, loading, error, onAdd }: CompetitionCard
             </span>
           </div>
 
-          <h3 className="mt-4 font-display text-3xl font-extrabold leading-tight tracking-tight text-white sm:text-4xl">
+          <h3 className="mt-4 text-balance font-display text-3xl font-extrabold leading-tight tracking-tight text-white sm:text-4xl">
             {comp.nom}
           </h3>
 
@@ -120,7 +120,7 @@ function CompetitionCard({ competition, loading, error, onAdd }: CompetitionCard
   }
 
   return (
-    <div className="min-h-[240px] rounded-lg border border-gray-200 bg-white p-5 shadow-sm">
+    <div className="min-h-[240px] rounded-lg border border-gray-200 bg-white p-5 shadow-sm sm:p-6">
       <SectionLabel>Prochaine compétition</SectionLabel>
 
       {loading && <p className="mt-6 text-sm text-ekvara-muted">Chargement...</p>}

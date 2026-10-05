@@ -6,7 +6,7 @@ import type { HTMLAttributes } from 'react';
 function SectionLabel({ className = '', children, ...props }: HTMLAttributes<HTMLHeadingElement>) {
   return (
     <h2
-      className={`text-sm font-semibold uppercase tracking-wide text-ekvara-muted ${className}`}
+      className={`text-sm font-semibold uppercase tracking-wide text-ekvara-black/55 ${className}`}
       {...props}
     >
       {children}
