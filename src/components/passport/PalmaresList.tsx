@@ -35,8 +35,14 @@ function capitalizeFirst(value: string): string {
 
 // Transformation purement présentationnelle du classement réel (§10) :
 // "3" -> "3E", "1" -> "1ER". N'invente jamais de classement absent.
-function formatOrdinal(classement: number): string {
-  return classement === 1 ? '1ER' : `${classement}E`;
+// Ordinal français avec exposant : « 3e », « 1er » — jamais « 3E ».
+function Ordinal({ value }: { value: number }) {
+  return (
+    <>
+      {value}
+      <sup className="ml-0.5 text-[0.45em] font-bold">{value === 1 ? 'er' : 'e'}</sup>
+    </>
+  );
 }
 
 function PalmaresList({ athleteId, participations, loading, error, onResultUpdated }: PalmaresListProps) {
@@ -101,7 +107,7 @@ function PalmaresList({ athleteId, participations, loading, error, onResultUpdat
                     </div>
 
                     {participation.medaille !== null && (
-                      <span className="rounded-full bg-ekvara-lime px-2.5 py-0.5 text-xs font-bold uppercase text-ekvara-black">
+                      <span className="rounded-full bg-ekvara-lime px-2.5 py-1 text-xs font-semibold text-ekvara-black">
                         {capitalizeFirst(participation.medaille)}
                       </span>
                     )}
@@ -118,7 +124,7 @@ function PalmaresList({ athleteId, participations, loading, error, onResultUpdat
                     <div className="mt-3 flex flex-wrap items-end gap-x-6 gap-y-2">
                       {participation.classement !== null && (
                         <p className="font-display text-3xl font-extrabold leading-none text-ekvara-black">
-                          {formatOrdinal(participation.classement)}
+                          <Ordinal value={participation.classement} />
                         </p>
                       )}
 

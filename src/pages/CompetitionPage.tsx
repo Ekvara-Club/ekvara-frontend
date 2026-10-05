@@ -67,9 +67,15 @@ function formatDateRange(dateDebut: string, dateFin: string | null): string {
 }
 
 // Transformation purement présentationnelle du classement réel, même
-// convention que /passeport : "3" -> "3E", "1" -> "1ER".
-function formatOrdinal(classement: number): string {
-  return classement === 1 ? '1ER' : `${classement}E`;
+// convention que /passeport : "3" -> « 3e », "1" -> « 1er ».
+// Ordinal français avec exposant : « 3e », « 1er » — jamais « 3E ».
+function Ordinal({ value }: { value: number }) {
+  return (
+    <>
+      {value}
+      <sup className="ml-0.5 text-[0.45em] font-bold">{value === 1 ? 'er' : 'e'}</sup>
+    </>
+  );
 }
 
 // Même calcul que CompetitionCard (dashboard), mais renvoie `null` plutôt que
@@ -207,13 +213,13 @@ function ResultSection({
           <div className="flex items-center gap-2">
             {podium && <span className="h-2 w-2 flex-shrink-0 rounded-full bg-ekvara-lime" aria-hidden="true" />}
             <p className="font-display text-5xl font-extrabold leading-none text-ekvara-black">
-              {formatOrdinal(participation.classement)}
+              <Ordinal value={participation.classement} />
             </p>
           </div>
         )}
 
         {participation.medaille !== null && (
-          <span className="rounded-full bg-ekvara-lime px-3 py-1 text-sm font-bold uppercase text-ekvara-black">
+          <span className="rounded-full bg-ekvara-lime px-2.5 py-1 text-xs font-semibold text-ekvara-black">
             {capitalizeFirst(participation.medaille)}
           </span>
         )}

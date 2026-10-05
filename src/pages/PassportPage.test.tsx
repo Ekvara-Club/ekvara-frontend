@@ -75,7 +75,7 @@ describe('PassportPage — palmarès, saisie résultat', () => {
     expect(screen.queryByText('Record')).not.toBeInTheDocument();
     expect(screen.queryByText(/^Podiums?$/)).not.toBeInTheDocument();
 
-    expect(within(palmares()).getByText('3E')).toBeInTheDocument();
+    expect(within(palmares()).getByText((_, el) => el?.tagName === 'P' && el.textContent === '3e')).toBeInTheDocument();
     expect(within(palmares()).getByText('Bronze')).toBeInTheDocument();
     expect(within(palmares()).getByText('Dutch Open')).toBeInTheDocument();
     expect(within(palmares()).getByText('Résultat non renseigné')).toBeInTheDocument();
@@ -91,7 +91,7 @@ describe('PassportPage — palmarès, saisie résultat', () => {
     expect(await screen.findByText('Impossible de charger la progression pour le moment.')).toBeInTheDocument();
     expect(screen.queryByText('Failed to fetch')).not.toBeInTheDocument();
     expect(screen.getByText('Kaïs Dilmi')).toBeInTheDocument();
-    expect(await within(palmares()).findByText('1ER')).toBeInTheDocument();
+    expect(await within(palmares()).findByText((_, el) => el?.tagName === 'P' && el.textContent === '1er')).toBeInTheDocument();
   });
 
   it('compétitions en erreur : la progression s\'affiche quand même (amélioration jamais déduite du signe du delta)', async () => {
@@ -124,7 +124,7 @@ describe('PassportPage — palmarès, saisie résultat', () => {
       victoires: 0,
       defaites: 0,
     });
-    expect(await within(palmares()).findByText('1ER')).toBeInTheDocument();
+    expect(await within(palmares()).findByText((_, el) => el?.tagName === 'P' && el.textContent === '1er')).toBeInTheDocument();
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     expect(api.getCompetitions).toHaveBeenCalledTimes(2);
   });
