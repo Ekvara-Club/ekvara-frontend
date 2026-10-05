@@ -2,6 +2,7 @@ import { lazy, Suspense, useEffect, useState } from 'react';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { consumeReturnTo, rememberReturnTo } from './services/session';
 import { navigateTo } from './utils/navigation';
+import PageErrorBoundary from './components/layout/PageErrorBoundary';
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
@@ -61,9 +62,11 @@ function AppRoutes() {
   // compte, toutes les pages sont remontées et ne gardent aucune donnée de
   // l'ancien (sans jamais recharger la fenêtre).
   return (
-    <Suspense fallback={<FullPageLoading />}>
-      <ProtectedRoutes key={user.id} pathname={pathname} />
-    </Suspense>
+    <PageErrorBoundary resetKey={pathname}>
+      <Suspense fallback={<FullPageLoading />}>
+        <ProtectedRoutes key={user.id} pathname={pathname} />
+      </Suspense>
+    </PageErrorBoundary>
   );
 }
 
