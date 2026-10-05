@@ -18,6 +18,7 @@ import type {
 } from '../types/activity';
 import type { MetricMeasurement, MetricsOverviewResponse } from '../types/metrics-overview';
 import type { AthleteConditionView, UpdateAthleteConditionPayload } from '../types/condition';
+import type { WtProfileView } from '../types/wtLink';
 import { apiFetch } from './apiClient';
 
 // Exporté pour que l'appelant distingue ce message (sûr à afficher tel quel)
@@ -92,6 +93,37 @@ export async function updateAthleteCondition(
   }
 
   return response.json();
+}
+
+// Lien vers le profil World Taekwondo. 409 (profil déjà relié à un autre
+// compte) : message backend destiné à l'athlète, relayé tel quel.
+async function wtProfileRequest(athleteId: string, init?: RequestInit): Promise<WtProfileView> {
+  const response = await apiFetch(`/athletes/${athleteId}/wt-profile`, init);
+  if (!response.ok) {
+    let message = `Impossible de mettre à jour ton profil World Taekwondo (${response.status})`;
+    if (response.status === 409 || response.status === 404) {
+      const body = await response.json().catch(() => null);
+      if (typeof body?.message === 'string') message = body.message;
+    }
+    throw new Error(message);
+  }
+  return response.json();
+}
+
+export function getWtProfile(athleteId: string): Promise<WtProfileView> {
+  return wtProfileRequest(athleteId);
+}
+
+export function requestWtProfileLink(athleteId: string, externalAthleteId: string): Promise<WtProfileView> {
+  return wtProfileRequest(athleteId, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ externalAthleteId }),
+  });
+}
+
+export function unlinkWtProfile(athleteId: string): Promise<WtProfileView> {
+  return wtProfileRequest(athleteId, { method: 'DELETE' });
 }
 
 export async function getWeightSummary(athleteId: string): Promise<WeightSummaryResponse> {

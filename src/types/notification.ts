@@ -8,9 +8,11 @@ export type NotificationType =
   | 'TRAINING_CANCELLED'
   | 'EXERCISE_ASSIGNED'
   | 'GOAL_UPDATED'
-  | 'WEIGHT_TARGET_UPDATED';
+  | 'WEIGHT_TARGET_UPDATED'
+  | 'WT_PROFILE_LINK_CONFIRMED'
+  | 'WT_PROFILE_LINK_REJECTED';
 
-export type NotificationResourceType = 'TRAINING' | 'EXERCISE' | 'GOAL' | 'WEIGHT_TARGET' | 'COMPETITION';
+export type NotificationResourceType = 'TRAINING' | 'EXERCISE' | 'GOAL' | 'WEIGHT_TARGET' | 'COMPETITION' | 'WT_PROFILE';
 
 export interface NotificationItem {
   id: string;

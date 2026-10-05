@@ -5,6 +5,7 @@ import CareerStats from '../components/passport/CareerStats';
 import MetricsOverview from '../components/passport/MetricsOverview';
 import PalmaresList from '../components/passport/PalmaresList';
 import ConditionStatus from '../components/condition/ConditionStatus';
+import WtProfileSection from '../components/passport/WtProfileSection';
 import { useAuth } from '../contexts/AuthContext';
 import { getCompetitions, getMetricsOverview } from '../services/athletes.api';
 import type { ParticipationListItem } from '../types/activity';
@@ -130,6 +131,10 @@ function PassportPage() {
               error={participationsError}
               onResultUpdated={() => loadParticipations(() => false)}
             />
+          </section>
+
+          <section className="border-t border-gray-200 pt-8">
+            <WtProfileSection athleteId={athleteId} />
           </section>
         </div>
       </main>

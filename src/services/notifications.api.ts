@@ -62,6 +62,8 @@ export function deepLinkFor(notification: NotificationItem): string {
       return '/objectifs';
     case 'WEIGHT_TARGET':
       return '/poids';
+    case 'WT_PROFILE':
+      return '/passeport';
     default:
       return '/';
   }

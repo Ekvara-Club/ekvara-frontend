@@ -10,6 +10,9 @@ const api = vi.hoisted(() => ({
   getMetricsOverview: vi.fn(),
   updateCompetitionResult: vi.fn(),
   updateAthleteCondition: vi.fn(),
+  getWtProfile: vi.fn(),
+  requestWtProfileLink: vi.fn(),
+  unlinkWtProfile: vi.fn(),
 }));
 const auth = vi.hoisted(() => ({ updateAthlete: vi.fn() }));
 
@@ -52,6 +55,7 @@ describe('PassportPage — statistiques carrière, palmarès, saisie résultat',
     vi.setSystemTime(new Date(2026, 8, 21));
     api.getCompetitions.mockResolvedValue([]);
     api.getMetricsOverview.mockResolvedValue({ metrics: [] });
+    api.getWtProfile.mockResolvedValue({ link: null, suggestions: [] });
   });
 
   afterEach(() => {
