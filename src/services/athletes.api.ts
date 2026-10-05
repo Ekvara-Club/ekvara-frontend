@@ -17,6 +17,7 @@ import type {
   UpdateParticipationResultPayload,
 } from '../types/activity';
 import type { MetricMeasurement, MetricsOverviewResponse } from '../types/metrics-overview';
+import type { AthleteConditionView, UpdateAthleteConditionPayload } from '../types/condition';
 import { apiFetch } from './apiClient';
 
 // Exporté pour que l'appelant distingue ce message (sûr à afficher tel quel)
@@ -66,6 +67,31 @@ export async function getNextCompetition(
 
   const data: NextCompetitionResponse | null = await response.json();
   return data;
+}
+
+// Les messages 400 du backend (date de retour passée...) sont destinés à
+// l'athlète : relayés tels quels, jamais le statut HTTP brut seul.
+export async function updateAthleteCondition(
+  athleteId: string,
+  payload: UpdateAthleteConditionPayload,
+): Promise<AthleteConditionView> {
+  const response = await apiFetch(`/athletes/${athleteId}/condition`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    let message = `Impossible d'enregistrer ton état (${response.status})`;
+    if (response.status === 400) {
+      const body = await response.json().catch(() => null);
+      const detail = Array.isArray(body?.message) ? body.message[0] : body?.message;
+      if (typeof detail === 'string') message = detail;
+    }
+    throw new Error(message);
+  }
+
+  return response.json();
 }
 
 export async function getWeightSummary(athleteId: string): Promise<WeightSummaryResponse> {

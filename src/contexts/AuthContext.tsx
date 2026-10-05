@@ -28,6 +28,10 @@ interface AuthContextValue {
   login: (payload: LoginPayload) => Promise<void>;
   register: (payload: RegisterPayload) => Promise<void>;
   logout: () => Promise<void>;
+  // Reporte dans la session une mise à jour déjà confirmée par le backend
+  // (ex. état de forme) sans recharger /auth/me — même athlète, jamais un
+  // changement d'identité (aucun remontage des pages).
+  updateAthlete: (patch: Partial<Omit<AuthMeResponse, 'id' | 'user_id' | 'app_user'>>) => void;
 }
 
 const SESSION_EXPIRED_NOTICE = 'Ta session a expiré. Reconnecte-toi pour continuer.';
@@ -178,6 +182,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setSession(null);
   }, [setSession]);
 
+  const updateAthlete = useCallback<AuthContextValue['updateAthlete']>(
+    (patch) => {
+      const current = sessionRef.current;
+      if (current) setSession({ ...current, ...patch });
+    },
+    [setSession],
+  );
+
   const value = useMemo<AuthContextValue>(
     () => ({
       user: session?.app_user ?? null,
@@ -187,8 +199,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       login,
       register,
       logout,
+      updateAthlete,
     }),
-    [session, loading, sessionNotice, login, register, logout],
+    [session, loading, sessionNotice, login, register, logout, updateAthlete],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

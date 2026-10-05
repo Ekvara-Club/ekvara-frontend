@@ -64,7 +64,8 @@ vi.mock('./pages/LoginPage', async () => {
 function athlete(id: string): AuthMeResponse {
   return {
     id, user_id: `u-${id}`, club_id: null, categorie_age: null, genre: null, grade: null,
-    date_naissance: null, niveau_sportif: null, created_at: null, updated_at: null, club: null,
+    date_naissance: null, niveau_sportif: null,
+    etat_forme: 'actif', etat_forme_note: null, etat_forme_retour: null, etat_forme_updated_at: null, created_at: null, updated_at: null, club: null,
     app_user: { id: `u-${id}`, email: 'a@b.fr', nom: 'N', prenom: 'P', langue: 'fr', created_at: null, updated_at: null },
   };
 }

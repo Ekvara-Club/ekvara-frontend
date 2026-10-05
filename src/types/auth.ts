@@ -29,6 +29,12 @@ export interface AuthMeResponse {
   grade: string | null;
   date_naissance: string | null;
   niveau_sportif: string | null;
+  // État de forme (colonnes athlete brutes renvoyées par /auth/me) :
+  // etat_forme_retour est une date métier sérialisée en ISO minuit UTC.
+  etat_forme: string;
+  etat_forme_note: string | null;
+  etat_forme_retour: string | null;
+  etat_forme_updated_at: string | null;
   created_at: string | null;
   updated_at: string | null;
   club: AuthClub | null;

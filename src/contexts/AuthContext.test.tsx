@@ -23,6 +23,7 @@ function athlete(id: string, prenom = 'Kaïs'): AuthMeResponse {
     grade: null,
     date_naissance: null,
     niveau_sportif: null,
+    etat_forme: 'actif', etat_forme_note: null, etat_forme_retour: null, etat_forme_updated_at: null,
     created_at: null,
     updated_at: null,
     club: null,

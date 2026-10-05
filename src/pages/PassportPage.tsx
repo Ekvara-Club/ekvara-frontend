@@ -4,6 +4,7 @@ import AthleteProfileCard from '../components/passport/AthleteProfileCard';
 import CareerStats from '../components/passport/CareerStats';
 import MetricsOverview from '../components/passport/MetricsOverview';
 import PalmaresList from '../components/passport/PalmaresList';
+import ConditionStatus from '../components/condition/ConditionStatus';
 import { useAuth } from '../contexts/AuthContext';
 import { getCompetitions, getMetricsOverview } from '../services/athletes.api';
 import type { ParticipationListItem } from '../types/activity';
@@ -12,7 +13,7 @@ import type { MetricOverviewEntry } from '../types/metrics-overview';
 function PassportPage() {
   // PassportPage n'est rendue que lorsque l'utilisateur est authentifié
   // (garde dans App.tsx) : athlete/user sont donc garantis non-null ici.
-  const { athlete, user } = useAuth();
+  const { athlete, user, updateAthlete } = useAuth();
   const athleteId = athlete!.id;
 
   const [participations, setParticipations] = useState<ParticipationListItem[]>([]);
@@ -90,7 +91,24 @@ function PassportPage() {
 
       <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
         <div className="flex flex-col gap-10">
-          <AthleteProfileCard user={user!} athlete={athlete!} />
+          <div>
+            <AthleteProfileCard user={user!} athlete={athlete!} />
+            {/* État de forme déclaré par l'athlète, visible par ses coachs. */}
+            <ConditionStatus
+              athleteId={athleteId}
+              status={athlete!.etat_forme}
+              note={athlete!.etat_forme_note}
+              expectedReturn={athlete!.etat_forme_retour}
+              onSaved={(view) =>
+                updateAthlete({
+                  etat_forme: view.status,
+                  etat_forme_note: view.note,
+                  etat_forme_retour: view.expectedReturn,
+                  etat_forme_updated_at: view.updatedAt,
+                })
+              }
+            />
+          </div>
 
           <section className="border-t border-gray-200 pt-8">
             <CareerStats

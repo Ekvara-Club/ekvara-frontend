@@ -9,13 +9,19 @@ const api = vi.hoisted(() => ({
   getCompetitions: vi.fn(),
   getMetricsOverview: vi.fn(),
   updateCompetitionResult: vi.fn(),
+  updateAthleteCondition: vi.fn(),
 }));
+const auth = vi.hoisted(() => ({ updateAthlete: vi.fn() }));
 
 vi.mock('../services/athletes.api', () => api);
 vi.mock('../contexts/AuthContext', () => ({
   useAuth: () => ({
-    athlete: { id: 'athlete-1', club: null, grade: null, categorie_age: null, niveau_sportif: null, genre: null },
+    athlete: {
+      id: 'athlete-1', club: null, grade: null, categorie_age: null, niveau_sportif: null, genre: null,
+      etat_forme: 'actif', etat_forme_note: null, etat_forme_retour: null,
+    },
     user: { prenom: 'Kaïs', nom: 'Dilmi' },
+    updateAthlete: auth.updateAthlete,
   }),
 }));
 vi.mock('../components/layout/Header', () => ({ default: () => <header data-testid="header" /> }));
@@ -154,5 +160,27 @@ describe('PassportPage — statistiques carrière, palmarès, saisie résultat',
     expect(await within(dialog).findByText("La compétition n'est pas encore terminée.")).toBeInTheDocument();
     expect(within(dialog).getByLabelText('Classement')).toHaveValue(2);
     expect(api.getCompetitions).toHaveBeenCalledTimes(1);
+  });
+
+  it('« Mon état » sous le profil : après enregistrement, la session est mise à jour (champs /auth/me)', async () => {
+    api.updateAthleteCondition.mockResolvedValue({
+      status: 'malade', note: 'Grippe', expectedReturn: null, updatedAt: '2026-10-05T10:00:00.000Z',
+    });
+    render(<PassportPage />);
+
+    expect(screen.getByText('Mon état')).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Modifier' }));
+    const dialog = screen.getByRole('dialog', { name: 'Mon état' });
+    await userEvent.click(within(dialog).getByRole('radio', { name: /Malade/ }));
+    await userEvent.type(within(dialog).getByLabelText('Précision (optionnel)'), 'Grippe');
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Enregistrer' }));
+
+    expect(api.updateAthleteCondition).toHaveBeenCalledWith('athlete-1', { status: 'malade', note: 'Grippe' });
+    expect(auth.updateAthlete).toHaveBeenCalledWith({
+      etat_forme: 'malade',
+      etat_forme_note: 'Grippe',
+      etat_forme_retour: null,
+      etat_forme_updated_at: '2026-10-05T10:00:00.000Z',
+    });
   });
 });
