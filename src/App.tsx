@@ -1,20 +1,24 @@
-import { useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { consumeReturnTo, rememberReturnTo } from './services/session';
 import { navigateTo } from './utils/navigation';
 import HomePage from './pages/HomePage';
-import ActivityPage from './pages/ActivityPage';
-import ExercisesPage from './pages/ExercisesPage';
-import PassportPage from './pages/PassportPage';
-import WeightPage from './pages/WeightPage';
-import GoalsPage from './pages/GoalsPage';
-import ProgressPage from './pages/ProgressPage';
-import CompetitionPage from './pages/CompetitionPage';
-import CompetitionsPage from './pages/CompetitionsPage';
-import WtAthletesPage from './pages/WtAthletesPage';
-import WtAthletePage from './pages/WtAthletePage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
+
+// Pages d'entrée (accueil, login, register) dans le bundle initial ; les
+// autres ne sont téléchargées qu'à la première visite (Recharts n'est ainsi
+// chargé que par Poids et Progression).
+const ActivityPage = lazy(() => import('./pages/ActivityPage'));
+const ExercisesPage = lazy(() => import('./pages/ExercisesPage'));
+const PassportPage = lazy(() => import('./pages/PassportPage'));
+const WeightPage = lazy(() => import('./pages/WeightPage'));
+const GoalsPage = lazy(() => import('./pages/GoalsPage'));
+const ProgressPage = lazy(() => import('./pages/ProgressPage'));
+const CompetitionPage = lazy(() => import('./pages/CompetitionPage'));
+const CompetitionsPage = lazy(() => import('./pages/CompetitionsPage'));
+const WtAthletesPage = lazy(() => import('./pages/WtAthletesPage'));
+const WtAthletePage = lazy(() => import('./pages/WtAthletePage'));
 
 const PUBLIC_PATHS = ['/login', '/register'];
 
@@ -46,11 +50,7 @@ function AppRoutes() {
   }, [user, loading, pathname]);
 
   if (loading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-ekvara-surface">
-        <p className="text-sm text-ekvara-muted">Chargement...</p>
-      </div>
-    );
+    return <FullPageLoading />;
   }
 
   if (!user) {
@@ -60,7 +60,19 @@ function AppRoutes() {
   // key = id de l'athlète courant : si la session est remplacée par un autre
   // compte, toutes les pages sont remontées et ne gardent aucune donnée de
   // l'ancien (sans jamais recharger la fenêtre).
-  return <ProtectedRoutes key={user.id} pathname={pathname} />;
+  return (
+    <Suspense fallback={<FullPageLoading />}>
+      <ProtectedRoutes key={user.id} pathname={pathname} />
+    </Suspense>
+  );
+}
+
+function FullPageLoading() {
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-ekvara-surface">
+      <p className="text-sm text-ekvara-muted">Chargement...</p>
+    </div>
+  );
 }
 
 function ProtectedRoutes({ pathname }: { pathname: string }) {
