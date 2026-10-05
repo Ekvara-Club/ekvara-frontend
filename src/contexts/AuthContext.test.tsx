@@ -55,6 +55,16 @@ async function renderReady() {
   await waitFor(() => expect(screen.getByTestId('loading').textContent).toBe('false'));
 }
 
+// Les écouteurs focus/visibilitychange sont posés dans un useEffect, qui peut
+// passer après loading=false quand la machine est chargée : un événement
+// déclenché trop tôt n'était alors entendu par personne (test instable).
+async function renderReadyWithReturnListeners() {
+  const addListener = vi.spyOn(document, 'addEventListener');
+  await renderReady();
+  await waitFor(() => expect(addListener).toHaveBeenCalledWith('visibilitychange', expect.any(Function)));
+  addListener.mockRestore();
+}
+
 beforeEach(() => {
   vi.useFakeTimers({ toFake: ['Date'] });
   vi.setSystemTime(new Date(2026, 8, 21, 10, 0, 0));
@@ -217,7 +227,7 @@ describe('AuthContext — 403 : revalidation, jamais de faux logout', () => {
 describe('AuthContext — focus / visibilité', () => {
   it('retour de focus après plusieurs minutes : revalide et détecte une session expirée', async () => {
     api.getMe.mockResolvedValueOnce(athlete('a1')).mockResolvedValueOnce(null);
-    await renderReady();
+    await renderReadyWithReturnListeners();
     advance(5 * 60_000);
 
     await act(async () => {
@@ -230,7 +240,7 @@ describe('AuthContext — focus / visibilité', () => {
 
   it('retour de visibilité (onglet redevenu visible) revalide aussi', async () => {
     api.getMe.mockResolvedValueOnce(athlete('a1')).mockResolvedValueOnce(athlete('a2'));
-    await renderReady();
+    await renderReadyWithReturnListeners();
     advance(5 * 60_000);
 
     await act(async () => {
@@ -242,7 +252,7 @@ describe('AuthContext — focus / visibilité', () => {
 
   it('focus + visibilitychange simultanés à un changement d\'onglet : une seule vérification', async () => {
     api.getMe.mockResolvedValue(athlete('a1'));
-    await renderReady();
+    await renderReadyWithReturnListeners();
     advance(5 * 60_000);
 
     await act(async () => {
@@ -255,7 +265,7 @@ describe('AuthContext — focus / visibilité', () => {
 
   it('focus répétés dans les 30 s : throttlés', async () => {
     api.getMe.mockResolvedValue(athlete('a1'));
-    await renderReady();
+    await renderReadyWithReturnListeners();
     advance(31_000);
 
     await act(async () => window.dispatchEvent(new Event('focus')));
@@ -267,7 +277,7 @@ describe('AuthContext — focus / visibilité', () => {
 
   it('juste après le bootstrap, un focus ne redemande pas /me', async () => {
     api.getMe.mockResolvedValue(athlete('a1'));
-    await renderReady();
+    await renderReadyWithReturnListeners();
     advance(2_000);
 
     await act(async () => window.dispatchEvent(new Event('focus')));

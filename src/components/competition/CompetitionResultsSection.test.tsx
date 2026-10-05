@@ -79,6 +79,9 @@ describe('CompetitionResultsSection', () => {
 
     expect(await screen.findByRole('heading', { level: 3, name: 'Men -58kg' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Men -58kg' })).toHaveAttribute('aria-pressed', 'true');
+    // Le titre suit `selected` dès le rendu ; l'appel part dans l'effet qui
+    // suit : attendre les combats affichés avant de compter les appels.
+    expect((await screen.findAllByText('Marko GOLUBIC')).length).toBeGreaterThan(0);
     expect(api.getCompetitionCategoryResults).toHaveBeenCalledTimes(1);
     expect(api.getCompetitionCategoryResults).toHaveBeenCalledWith('comp-muju', 'Men -58kg');
   });
