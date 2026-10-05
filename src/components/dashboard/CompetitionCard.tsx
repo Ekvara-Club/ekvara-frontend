@@ -8,6 +8,7 @@ interface CompetitionCardProps {
   competition: NextCompetitionResponse | null;
   loading: boolean;
   error: string | null;
+  onAdd?: () => void;
 }
 
 function parseDateOnly(dateDebut: string): Date {
@@ -44,7 +45,7 @@ function capitalizeFirst(value: string): string {
 // Carte hero du dashboard (§6) : seule card volontairement noire — les autres
 // états (loading/empty/error) restent sur la surface claire commune plutôt
 // que d'imposer un grand aplat noir à un message neutre ou une erreur.
-function CompetitionCard({ competition, loading, error }: CompetitionCardProps) {
+function CompetitionCard({ competition, loading, error, onAdd }: CompetitionCardProps) {
   if (!loading && !error && competition) {
     const { competition: comp, source, statut, categorieAge, categoriePoids, preparation } = competition;
     const plannedByCoach = source === 'coach_preparation';
@@ -136,6 +137,11 @@ function CompetitionCard({ competition, loading, error }: CompetitionCardProps) 
           <p className="mt-1 text-sm text-ekvara-muted">
             Ajoute une compétition pour commencer ta préparation.
           </p>
+          {onAdd && (
+            <Button variant="primary" onClick={onAdd} className="mt-4">
+              + Ajouter une compétition
+            </Button>
+          )}
         </div>
       )}
     </div>

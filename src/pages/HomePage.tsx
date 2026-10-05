@@ -5,6 +5,9 @@ import WeightCard from '../components/dashboard/WeightCard';
 import GoalCard from '../components/dashboard/GoalCard';
 import ProgressCard from '../components/dashboard/ProgressCard';
 import NextTrainingCard from '../components/dashboard/NextTrainingCard';
+import AddWeightLogModal from '../components/weight/AddWeightLogModal';
+import AddTrainingModal from '../components/activity/AddTrainingModal';
+import AddCompetitionModal from '../components/activity/AddCompetitionModal';
 import { useAuth } from '../contexts/AuthContext';
 import {
   getNextCompetition,
@@ -42,6 +45,14 @@ function HomePage() {
   const [progressLoading, setProgressLoading] = useState(true);
   const [progressError, setProgressError] = useState<string | null>(null);
 
+  // Ajout direct depuis une card vide (mêmes modales que /poids et
+  // /activite). Après création, seule la card concernée se recharge (son
+  // effet dépend de ce compteur) — jamais window.location.reload().
+  const [addModal, setAddModal] = useState<'weight' | 'training' | 'competition' | null>(null);
+  const [competitionVersion, setCompetitionVersion] = useState(0);
+  const [weightVersion, setWeightVersion] = useState(0);
+  const [trainingVersion, setTrainingVersion] = useState(0);
+
   const [nextTraining, setNextTraining] = useState<NextTrainingResponse | null>(null);
   const [trainingLoading, setTrainingLoading] = useState(true);
   const [trainingError, setTrainingError] = useState<string | null>(null);
@@ -69,7 +80,7 @@ function HomePage() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [competitionVersion]);
 
   useEffect(() => {
     let cancelled = false;
@@ -94,7 +105,7 @@ function HomePage() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [weightVersion]);
 
   useEffect(() => {
     let cancelled = false;
@@ -169,7 +180,7 @@ function HomePage() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [trainingVersion]);
 
   return (
     <div className="min-h-screen bg-ekvara-surface">
@@ -191,17 +202,62 @@ function HomePage() {
             competition={nextCompetition}
             loading={competitionLoading}
             error={competitionError}
+            onAdd={() => setAddModal('competition')}
           />
-          <NextTrainingCard training={nextTraining} loading={trainingLoading} error={trainingError} />
+          <NextTrainingCard
+            training={nextTraining}
+            loading={trainingLoading}
+            error={trainingError}
+            onAdd={() => setAddModal('training')}
+          />
         </section>
 
         {/* Poids / Objectif / Progression : couche "performance personnelle" */}
         <section className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-3">
-          <WeightCard summary={weightSummary} loading={weightLoading} error={weightError} />
+          <WeightCard
+            summary={weightSummary}
+            loading={weightLoading}
+            error={weightError}
+            onAdd={() => setAddModal('weight')}
+          />
           <GoalCard goal={activeGoal} loading={goalLoading} error={goalError} />
           <ProgressCard data={progress} loading={progressLoading} error={progressError} />
         </section>
       </main>
+
+      {addModal === 'weight' && (
+        <AddWeightLogModal
+          athleteId={athleteId}
+          onClose={() => setAddModal(null)}
+          onSaved={() => {
+            setAddModal(null);
+            setWeightVersion((v) => v + 1);
+          }}
+        />
+      )}
+      {addModal === 'training' && (
+        <AddTrainingModal
+          athleteId={athleteId}
+          onClose={() => setAddModal(null)}
+          onCreated={() => {
+            setAddModal(null);
+            setTrainingVersion((v) => v + 1);
+          }}
+        />
+      )}
+      {addModal === 'competition' && (
+        <AddCompetitionModal
+          athleteId={athleteId}
+          // L'accueil ne charge pas la liste des participations : le 409 du
+          // backend reste le filet de sécurité contre un doublon (CLAUDE.md §16).
+          existingCompetitionIds={[]}
+          onClose={() => setAddModal(null)}
+          onCreated={() => {
+            setAddModal(null);
+            setCompetitionVersion((v) => v + 1);
+          }}
+        />
+      )}
     </div>
   );
 }

@@ -7,6 +7,7 @@ interface NextTrainingCardProps {
   training: NextTrainingResponse | null;
   loading: boolean;
   error: string | null;
+  onAdd?: () => void;
 }
 
 function formatDate(startAt: string): string {
@@ -45,7 +46,7 @@ function getTemporalStatusLabel(startAt: string, endAt: string | null): string |
   return null;
 }
 
-function NextTrainingCard({ training, loading, error }: NextTrainingCardProps) {
+function NextTrainingCard({ training, loading, error, onAdd }: NextTrainingCardProps) {
   const status = training ? getTemporalStatusLabel(training.startAt, training.endAt) : null;
   // Lime réservé exclusivement à "Aujourd'hui" (§3) : les autres états
   // temporels ("En cours", "Demain"...) restent neutres.
@@ -67,6 +68,11 @@ function NextTrainingCard({ training, loading, error }: NextTrainingCardProps) {
           <p className="mt-1 text-sm text-ekvara-muted">
             Ajoute une séance pour organiser ta préparation.
           </p>
+          {onAdd && (
+            <Button variant="primary" onClick={onAdd} className="mt-4">
+              + Ajouter un entraînement
+            </Button>
+          )}
         </div>
       )}
 

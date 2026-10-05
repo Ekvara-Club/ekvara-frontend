@@ -8,6 +8,9 @@ interface WeightCardProps {
   summary: WeightSummaryResponse | null;
   loading: boolean;
   error: string | null;
+  // État vide : action d'ajout directe (la page ouvre la modale, la card
+  // reste présentationnelle).
+  onAdd?: () => void;
 }
 
 function formatWeight(value: number): string {
@@ -41,7 +44,7 @@ function getWeeklyChangeLabel(weeklyChange: number): string {
   return `${formatSignedWeight(weeklyChange)} kg cette semaine`;
 }
 
-function WeightCard({ summary, loading, error }: WeightCardProps) {
+function WeightCard({ summary, loading, error, onAdd }: WeightCardProps) {
   return (
     <div className="min-h-[240px] rounded-lg border border-gray-200 bg-white p-5 shadow-sm">
       <SectionLabel>Poids</SectionLabel>
@@ -58,6 +61,11 @@ function WeightCard({ summary, loading, error }: WeightCardProps) {
           <p className="mt-1 text-sm text-ekvara-muted">
             Ajoute une première pesée pour commencer ton suivi.
           </p>
+          {onAdd && (
+            <Button variant="primary" onClick={onAdd} className="mt-4">
+              + Ajouter une pesée
+            </Button>
+          )}
         </div>
       )}
 

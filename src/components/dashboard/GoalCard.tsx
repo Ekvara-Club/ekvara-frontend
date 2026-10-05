@@ -54,7 +54,7 @@ function GoalCard({ goal, loading, error }: GoalCardProps) {
         <div className="mt-6">
           <p className="text-sm font-medium text-ekvara-black">Aucun objectif en cours</p>
           <p className="mt-1 text-sm text-ekvara-muted">
-            Ajoute un objectif pour structurer ta préparation.
+            Ton coach peut te fixer un objectif pour structurer ta préparation.
           </p>
         </div>
       )}
