@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import GoalRoadmap from './GoalRoadmap';
 import SectionLabel from '../ui/SectionLabel';
 import { updateGoalStatus } from '../../services/athletes.api';
@@ -56,6 +56,19 @@ function PrimaryGoalPanel({ athleteId, goal, onChanged }: PrimaryGoalPanelProps)
     setPendingConfirm(null);
   }
 
+  // Même fermeture clavier que le menu profil du Header (Escape), en plus du
+  // clic extérieur ; annule aussi une confirmation d'abandon en attente.
+  useEffect(() => {
+    if (!isMenuOpen) return;
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key !== 'Escape') return;
+      setIsMenuOpen(false);
+      setPendingConfirm(null);
+    }
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [isMenuOpen]);
+
   function handleStatusChange(statut: GoalStatus) {
     setStatusError(null);
     setStatusSubmitting(true);
@@ -107,6 +120,8 @@ function PrimaryGoalPanel({ athleteId, goal, onChanged }: PrimaryGoalPanelProps)
             type="button"
             onClick={() => setIsMenuOpen((open) => !open)}
             aria-label="Actions sur l'objectif"
+            aria-haspopup="true"
+            aria-expanded={isMenuOpen}
             className="rounded-md p-1.5 text-ekvara-muted transition-colors hover:bg-gray-100 hover:text-ekvara-black"
           >
             ⋯

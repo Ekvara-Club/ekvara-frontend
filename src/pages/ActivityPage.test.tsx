@@ -142,4 +142,18 @@ describe('ActivityPage — Mes compétitions (#20)', () => {
     render(<ActivityPage />);
     expect(await mesCompetitions().findByText('Impossible de charger les compétitions.')).toBeInTheDocument();
   });
+
+  it('menu "+ Ajouter" : état annoncé (aria-expanded), Échap le ferme', async () => {
+    render(<ActivityPage />);
+    const trigger = screen.getByRole('button', { name: '+ Ajouter' });
+    expect(trigger).toHaveAttribute('aria-expanded', 'false');
+
+    await userEvent.click(trigger);
+    expect(trigger).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByRole('button', { name: /Entraînement/ })).toBeInTheDocument();
+
+    await userEvent.keyboard('{Escape}');
+    expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.queryByRole('button', { name: /Entraînement/ })).not.toBeInTheDocument();
+  });
 });

@@ -116,6 +116,23 @@ describe('GoalsPage — objectif principal, sections, actions', () => {
     await vi.waitFor(() => expect(api.getGoals).toHaveBeenCalledTimes(2));
   });
 
+  it('menu ⋯ : état annoncé (aria-expanded), Échap ferme et annule la confirmation en attente', async () => {
+    render(<GoalsPage />);
+    const trigger = await screen.findByRole('button', { name: "Actions sur l'objectif" });
+    expect(trigger).toHaveAttribute('aria-expanded', 'false');
+
+    await userEvent.click(trigger);
+    expect(trigger).toHaveAttribute('aria-expanded', 'true');
+    await userEvent.click(screen.getByRole('button', { name: "Abandonner l'objectif" }));
+    await userEvent.keyboard('{Escape}');
+
+    expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.queryByText("Confirmer l'abandon de cet objectif ?")).not.toBeInTheDocument();
+    await userEvent.click(trigger);
+    expect(screen.getByRole('button', { name: "Abandonner l'objectif" })).toBeInTheDocument();
+    expect(api.updateGoalStatus).not.toHaveBeenCalled();
+  });
+
   it('réactiver un objectif atteint : statut en_cours puis rechargement ; échec ⇒ message propre', async () => {
     render(<GoalsPage />);
     await loaded();

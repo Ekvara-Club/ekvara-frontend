@@ -42,7 +42,7 @@ describe('ExercisesPage — catalogue, recherche, filtres, fiche', () => {
     render(<ExercisesPage />);
     expect(await screen.findByText('3 exercices')).toBeInTheDocument();
 
-    await userEvent.type(screen.getByPlaceholderText('Rechercher un exercice...'), 'REACTION');
+    await userEvent.type(screen.getByRole('textbox', { name: 'Rechercher un exercice' }), 'REACTION');
 
     expect(screen.getByText('1 exercice')).toBeInTheDocument();
     expect(screen.getByText('Départs sur signal')).toBeInTheDocument();
@@ -64,7 +64,10 @@ describe('ExercisesPage — catalogue, recherche, filtres, fiche', () => {
     render(<ExercisesPage />);
     await screen.findByText('3 exercices');
 
+    expect(filterGroup('Type').getByRole('button', { name: 'Tous' })).toHaveAttribute('aria-pressed', 'true');
     await userEvent.click(filterGroup('Type').getByRole('button', { name: 'Mobilité' }));
+    expect(filterGroup('Type').getByRole('button', { name: 'Mobilité' })).toHaveAttribute('aria-pressed', 'true');
+    expect(filterGroup('Type').getByRole('button', { name: 'Tous' })).toHaveAttribute('aria-pressed', 'false');
     expect(screen.getByText('1 exercice')).toBeInTheDocument();
     expect(screen.getByText('Ouverture de hanches')).toBeInTheDocument();
 

@@ -95,6 +95,7 @@ function ExercisesPage() {
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Rechercher un exercice..."
+            aria-label="Rechercher un exercice"
             className="w-full max-w-md rounded-md border border-gray-300 px-4 py-2.5 text-sm"
           />
 
@@ -104,6 +105,7 @@ function ExercisesPage() {
               <button
                 type="button"
                 onClick={() => setTypeFilter(ALL_FILTER_VALUE)}
+                aria-pressed={typeFilter === ALL_FILTER_VALUE}
                 className={`rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
                   typeFilter === ALL_FILTER_VALUE
                     ? 'bg-ekvara-lime text-ekvara-black'
@@ -117,6 +119,7 @@ function ExercisesPage() {
                   key={option.value}
                   type="button"
                   onClick={() => setTypeFilter(option.value)}
+                  aria-pressed={typeFilter === option.value}
                   className={`rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
                     typeFilter === option.value
                       ? 'bg-ekvara-lime text-ekvara-black'
@@ -135,6 +138,7 @@ function ExercisesPage() {
               <button
                 type="button"
                 onClick={() => setNiveauFilter(ALL_FILTER_VALUE)}
+                aria-pressed={niveauFilter === ALL_FILTER_VALUE}
                 className={`rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
                   niveauFilter === ALL_FILTER_VALUE
                     ? 'bg-ekvara-lime text-ekvara-black'
@@ -148,6 +152,7 @@ function ExercisesPage() {
                   key={option.value}
                   type="button"
                   onClick={() => setNiveauFilter(option.value)}
+                  aria-pressed={niveauFilter === option.value}
                   className={`rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
                     niveauFilter === option.value
                       ? 'bg-ekvara-lime text-ekvara-black'

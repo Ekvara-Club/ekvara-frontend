@@ -99,6 +99,17 @@ function ActivityPage() {
   const [showAllPast, setShowAllPast] = useState(false);
 
   const [isAddMenuOpen, setIsAddMenuOpen] = useState(false);
+
+  // Même fermeture clavier que le menu profil du Header (Escape), en plus du
+  // clic extérieur — n'entre en jeu que si le menu est ouvert.
+  useEffect(() => {
+    if (!isAddMenuOpen) return;
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') setIsAddMenuOpen(false);
+    }
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [isAddMenuOpen]);
   const [isAddTrainingOpen, setIsAddTrainingOpen] = useState(false);
   const [isAddCompetitionOpen, setIsAddCompetitionOpen] = useState(false);
 
@@ -201,7 +212,12 @@ function ActivityPage() {
             <p className="mt-1 text-ekvara-muted">Ton planning et tes compétitions</p>
           </div>
           <div className="relative">
-            <Button variant="primary" onClick={() => setIsAddMenuOpen((open) => !open)}>
+            <Button
+              variant="primary"
+              onClick={() => setIsAddMenuOpen((open) => !open)}
+              aria-haspopup="true"
+              aria-expanded={isAddMenuOpen}
+            >
               + Ajouter
             </Button>
 

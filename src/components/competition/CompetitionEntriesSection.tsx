@@ -156,6 +156,7 @@ function CompetitionEntriesSection({ competitionId, categorieAge, categoriePoids
                       value={query}
                       onChange={(event) => setQuery(event.target.value)}
                       placeholder="Rechercher un inscrit..."
+                      aria-label="Rechercher un inscrit"
                       className="mt-3 w-full max-w-md rounded-md border border-gray-300 px-4 py-2.5 text-sm"
                     />
                   )}
