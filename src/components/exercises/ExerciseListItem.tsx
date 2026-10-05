@@ -33,7 +33,7 @@ function ExerciseListItem({ exercise, index, onSelect }: ExerciseListItemProps) 
     <button
       type="button"
       onClick={() => onSelect(exercise)}
-      className="group flex w-full items-start gap-4 border-b border-gray-200 py-5 text-left transition-colors hover:bg-gray-50"
+      className="group flex w-full items-start gap-4 border-b border-gray-200 px-2 py-5 text-left transition-colors hover:bg-gray-50"
     >
       <span
         className="w-10 flex-shrink-0 font-display text-2xl font-bold leading-none text-gray-300"

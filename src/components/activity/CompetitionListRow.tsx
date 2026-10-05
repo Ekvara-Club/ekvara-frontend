@@ -23,7 +23,7 @@ function CompetitionListRow({ dateDebut, nom, metaLine, rightLabel, highlight, o
       <button
         type="button"
         onClick={onClick}
-        className="flex w-full items-start gap-4 py-3 text-left transition-colors hover:bg-gray-50"
+        className="-mx-2 flex w-[calc(100%+1rem)] items-start gap-4 rounded-md px-2 py-3 text-left transition-colors hover:bg-gray-50"
       >
         <p className="w-12 flex-shrink-0 pt-0.5 font-display text-sm font-bold text-ekvara-black">
           {formatShortDate(dateDebut)}

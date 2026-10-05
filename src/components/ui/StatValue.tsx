@@ -18,7 +18,7 @@ const VALUE_SIZE_CLASSES: Record<NonNullable<StatValueProps['size']>, string> = 
 function StatValue({ value, label, size = 'xl', className = '' }: StatValueProps) {
   return (
     <div className={className}>
-      <p className={`font-display font-extrabold leading-none tracking-tight text-ekvara-black ${VALUE_SIZE_CLASSES[size]}`}>
+      <p className={`font-display font-extrabold leading-none tracking-tight tabular-nums text-ekvara-black ${VALUE_SIZE_CLASSES[size]}`}>
         {value}
       </p>
       <p className="mt-1.5 text-xs font-semibold uppercase tracking-wide text-ekvara-muted">{label}</p>

@@ -142,7 +142,7 @@ function Modal({ title, onClose, children, maxWidthClassName = 'max-w-md' }: Mod
             type="button"
             onClick={onClose}
             aria-label="Fermer"
-            className="text-xl leading-none text-ekvara-muted transition-colors hover:text-ekvara-black"
+            className="-mr-2 flex h-11 w-11 items-center justify-center rounded-md text-xl leading-none text-ekvara-black/55 transition-colors hover:bg-gray-100 hover:text-ekvara-black"
           >
             ×
           </button>

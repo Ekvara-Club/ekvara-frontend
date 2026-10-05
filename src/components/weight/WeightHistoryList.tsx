@@ -71,7 +71,7 @@ function WeightHistoryList({ logs, loading, error }: WeightHistoryListProps) {
       {!loading && !error && entries.length > 0 && (
         <ul className="mt-4 divide-y divide-gray-200 border-t border-gray-200">
           {entries.map(({ log, variation }) => (
-            <li key={log.id} className="flex items-start justify-between gap-4 py-5">
+            <li key={log.id} className="flex items-baseline justify-between gap-4 py-4">
               <div>
                 <p className="text-sm font-semibold uppercase tracking-wide text-ekvara-black">
                   {formatDate(log.measuredAt)}
@@ -79,7 +79,7 @@ function WeightHistoryList({ logs, loading, error }: WeightHistoryListProps) {
                 {log.note && <p className="mt-1 text-xs text-ekvara-muted">{log.note}</p>}
               </div>
               <div className="flex-shrink-0 text-right">
-                <p className="font-display text-2xl font-bold leading-none text-ekvara-black">
+                <p className="font-display text-2xl font-bold leading-none tabular-nums text-ekvara-black">
                   {formatWeight(log.weight)}
                   <span className="ml-1 font-sans text-sm font-normal text-ekvara-muted">kg</span>
                 </p>

@@ -34,7 +34,9 @@ function capitalizeFirst(value: string): string {
 // catégorie si elle est connue (jamais déduite).
 function formatCompetitionMeta(row: MyCompetitionRow): string | null {
   const { competition } = row;
-  const place = [competition.ville, competition.pays, competition.niveau].filter(Boolean).join(' · ');
+  const place = [competition.ville, competition.pays, competition.niveau && capitalizeFirst(competition.niveau)]
+    .filter(Boolean)
+    .join(' · ');
   const context = row.participation ? capitalizeFirst(row.participation.statut) : 'Prévue par ton coach';
   const category = [row.categorieAge, row.categoriePoids].filter(Boolean).join(' · ');
   return [place, context, category].filter(Boolean).join(' · ') || null;
@@ -314,7 +316,7 @@ function ActivityPage() {
 
         {/* Respiration forte avant la section secondaire (§14) : le planning
             reste visuellement l'élément principal de la page. */}
-        <section className="mt-16">
+        <section className="mt-12 border-t border-gray-200 pt-8">
           <SectionLabel>Mes compétitions</SectionLabel>
 
           {competitionsLoading && <p className="mt-4 text-sm text-ekvara-muted">Chargement...</p>}

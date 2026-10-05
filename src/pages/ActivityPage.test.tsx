@@ -52,7 +52,7 @@ describe('ActivityPage — Mes compétitions (#20)', () => {
     api.getCompetitions.mockResolvedValue([participation({ competition: FUTURE })]);
     render(<ActivityPage />);
 
-    expect(await mesCompetitions().findByText(/Eaubonne · France · national · Inscrit · Cadet · -74 kg/)).toBeInTheDocument();
+    expect(await mesCompetitions().findByText(/Eaubonne · France · National · Inscrit · Cadet · -74 kg/)).toBeInTheDocument();
     await userEvent.click(mesCompetitions().getByRole('button', { name: /Championnat de France seniors/ }));
     expect(nav.navigateTo).toHaveBeenCalledWith('/competitions/comp-champ');
   });

@@ -23,7 +23,7 @@ function MetricHistoryList({ measurements, unit }: MetricHistoryListProps) {
       <h3 className="text-sm font-semibold uppercase tracking-wide text-ekvara-muted">Historique</h3>
       <ul className="mt-4 divide-y divide-gray-200 border-t border-gray-200">
         {measurements.map((measurement) => (
-          <li key={measurement.id} className="flex items-start justify-between gap-4 py-4">
+          <li key={measurement.id} className="flex items-baseline justify-between gap-4 py-4">
             <div>
               <p className="text-sm font-semibold uppercase tracking-wide text-ekvara-black">
                 {formatDate(measurement.measuredAt)}
@@ -35,7 +35,7 @@ function MetricHistoryList({ measurements, unit }: MetricHistoryListProps) {
                 </span>
               )}
             </div>
-            <p className="flex-shrink-0 font-display text-xl font-bold leading-none text-ekvara-black">
+            <p className="flex-shrink-0 font-display text-xl font-bold leading-none tabular-nums text-ekvara-black">
               {measurement.value}
               {unit && <span className="ml-1 font-sans text-sm font-normal text-ekvara-muted">{unit}</span>}
             </p>

@@ -89,14 +89,14 @@ function ExercisesPage() {
           <p className="mt-1 text-ekvara-muted">Découvre des exercices pour progresser dans ta préparation.</p>
         </section>
 
-        <section className="mt-2 flex flex-col gap-4">
+        <section className="flex flex-col gap-4">
           <input
             type="text"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Rechercher un exercice..."
             aria-label="Rechercher un exercice"
-            className="w-full max-w-md rounded-md border border-gray-300 px-4 py-2.5 text-sm"
+            className="w-full max-w-md rounded-md border border-gray-300 px-4 py-2.5 text-sm text-ekvara-black placeholder:text-ekvara-black/40 focus:border-ekvara-black focus:outline-none focus:ring-1 focus:ring-ekvara-black"
           />
 
           <div>

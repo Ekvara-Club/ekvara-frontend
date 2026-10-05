@@ -421,7 +421,7 @@ function CompetitionPage({ competitionId }: CompetitionPageProps) {
         <button
           type="button"
           onClick={() => window.history.back()}
-          className="text-sm font-medium text-ekvara-muted hover:text-ekvara-black"
+          className="-ml-2 inline-flex min-h-[44px] items-center px-2 text-sm font-medium text-ekvara-black/55 hover:text-ekvara-black"
         >
           ← Retour
         </button>

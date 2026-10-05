@@ -43,7 +43,7 @@ function ConditionStatus({ athleteId, status, note, expectedReturn, onSaved }: C
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="text-sm font-medium text-ekvara-black underline-offset-2 hover:underline"
+        className="-my-2 py-2 text-sm font-medium text-ekvara-black underline-offset-2 hover:underline"
       >
         Modifier
       </button>
