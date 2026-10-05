@@ -210,4 +210,15 @@ describe('App — garde de routes et session', () => {
     await waitFor(() => expect(page()).toBe('home:a1'));
     expect(window.location.pathname).toBe('/');
   });
+
+  it('RGPD : politique de confidentialité lisible sans session, jamais renvoyée vers /login', async () => {
+    api.getMe.mockResolvedValue(null);
+    window.history.replaceState({}, '', '/confidentialite');
+
+    render(<App />);
+
+    expect(await screen.findByRole('heading', { name: 'Politique de confidentialité' })).toBeInTheDocument();
+    await act(async () => {});
+    expect(window.location.pathname).toBe('/confidentialite');
+  });
 });

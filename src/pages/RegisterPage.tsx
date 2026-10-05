@@ -4,6 +4,7 @@ import { handleNavClick } from '../utils/navigation';
 import { validateInvitationCode } from '../services/auth.api';
 import AuthBrandPanel from '../components/auth/AuthBrandPanel';
 import Button from '../components/ui/Button';
+import { LegalLinks } from './legal/LegalPages';
 
 // EKVARA n'est pas ouvert à l'inscription libre : un compte Athlete ne peut
 // être créé qu'à partir d'un code d'invitation transmis par un coach (voir
@@ -22,6 +23,10 @@ function RegisterPage() {
 
   const [prenom, setPrenom] = useState('');
   const [nom, setNom] = useState('');
+  // RGPD : trois accords obligatoires, jamais pré-cochés.
+  const [acceptPrivacyPolicy, setAcceptPrivacyPolicy] = useState(false);
+  const [acceptHealthData, setAcceptHealthData] = useState(false);
+  const [confirmAge, setConfirmAge] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -58,7 +63,16 @@ function RegisterPage() {
     // transmet tel quel, jamais un état "déjà validé" côté frontend.
     // register() connecte automatiquement (le backend pose le cookie dès
     // l'inscription) : pas d'étape /auth/login supplémentaire.
-    register({ invitationCode, email, password, nom, prenom })
+    register({
+      invitationCode,
+      email,
+      password,
+      nom,
+      prenom,
+      acceptPrivacyPolicy,
+      acceptHealthData,
+      confirmAgeOrParentalConsent: confirmAge,
+    })
       .catch((err: Error) => {
         console.error("Erreur d'inscription", err);
         setError(err.message || 'Impossible de créer le compte pour le moment.');
@@ -173,6 +187,28 @@ function RegisterPage() {
                   <p className="mt-1 text-xs text-ekvara-muted">8 caractères minimum</p>
                 </div>
 
+                <fieldset className="mt-1 flex flex-col gap-2.5 text-sm text-ekvara-black/80">
+                  <legend className="sr-only">Accords obligatoires</legend>
+                  <label className="flex items-start gap-2.5">
+                    <input type="checkbox" required checked={acceptPrivacyPolicy} onChange={(event) => setAcceptPrivacyPolicy(event.target.checked)} className="mt-0.5 h-4 w-4 flex-shrink-0 accent-ekvara-black" />
+                    <span>
+                      J'accepte la{' '}
+                      <a href="/confidentialite" target="_blank" rel="noopener noreferrer" className="font-medium text-ekvara-black underline">
+                        politique de confidentialité
+                      </a>
+                      .
+                    </span>
+                  </label>
+                  <label className="flex items-start gap-2.5">
+                    <input type="checkbox" required checked={acceptHealthData} onChange={(event) => setAcceptHealthData(event.target.checked)} className="mt-0.5 h-4 w-4 flex-shrink-0 accent-ekvara-black" />
+                    <span>J'accepte que mon poids et mon état de forme (données de santé) soient enregistrés et partagés avec mes coachs.</span>
+                  </label>
+                  <label className="flex items-start gap-2.5">
+                    <input type="checkbox" required checked={confirmAge} onChange={(event) => setConfirmAge(event.target.checked)} className="mt-0.5 h-4 w-4 flex-shrink-0 accent-ekvara-black" />
+                    <span>J'ai 15 ans ou plus, ou mon représentant légal a donné son accord.</span>
+                  </label>
+                </fieldset>
+
                 {error && <p className="text-sm text-red-600">{error}</p>}
 
                 <Button type="submit" variant="primary" disabled={submitting} className="mt-2 w-full">
@@ -200,6 +236,7 @@ function RegisterPage() {
               Se connecter
             </a>
           </p>
+          <LegalLinks className="mt-6 text-center" />
         </div>
       </div>
     </div>

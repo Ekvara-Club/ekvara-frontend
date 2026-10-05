@@ -6,6 +6,7 @@ import PageErrorBoundary from './components/layout/PageErrorBoundary';
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
+import { LegalNoticePage, PrivacyPolicyPage } from './pages/legal/LegalPages';
 
 // Pages d'entrée (accueil, login, register) dans le bundle initial ; les
 // autres ne sont téléchargées qu'à la première visite (Recharts n'est ainsi
@@ -22,6 +23,8 @@ const WtAthletesPage = lazy(() => import('./pages/WtAthletesPage'));
 const WtAthletePage = lazy(() => import('./pages/WtAthletePage'));
 
 const PUBLIC_PATHS = ['/login', '/register'];
+// Pages légales : lisibles connecté ou non, jamais de redirection.
+const LEGAL_PATHS = ['/confidentialite', '/mentions-legales'];
 
 function AppRoutes() {
   const [pathname, setPathname] = useState(window.location.pathname);
@@ -37,7 +40,7 @@ function AppRoutes() {
   // accessibles ; connecté -> /login et /register renvoient vers l'accueil (ou
   // vers la page qui était demandée avant la perte de session).
   useEffect(() => {
-    if (loading) return;
+    if (loading || LEGAL_PATHS.includes(pathname)) return;
 
     if (!user && !PUBLIC_PATHS.includes(pathname)) {
       rememberReturnTo(pathname);
@@ -49,6 +52,9 @@ function AppRoutes() {
       navigateTo(consumeReturnTo() ?? '/', 'replace');
     }
   }, [user, loading, pathname]);
+
+  if (pathname === '/confidentialite') return <PrivacyPolicyPage />;
+  if (pathname === '/mentions-legales') return <LegalNoticePage />;
 
   if (loading) {
     return <FullPageLoading />;

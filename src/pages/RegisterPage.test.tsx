@@ -22,6 +22,12 @@ async function fillForm() {
   await userEvent.type(screen.getByLabelText('Mot de passe'), 'motdepasse');
 }
 
+async function acceptAll() {
+  await userEvent.click(screen.getByRole('checkbox', { name: /politique de confidentialité/ }));
+  await userEvent.click(screen.getByRole('checkbox', { name: /données de santé/ }));
+  await userEvent.click(screen.getByRole('checkbox', { name: /15 ans ou plus/ }));
+}
+
 describe('RegisterPage — inscription sur invitation', () => {
   beforeEach(() => {
     api.validateInvitationCode.mockResolvedValue({ valid: true, club: { name: 'Club Taekwondo Eaubonne' }, expiresAt: '2026-12-31T00:00:00.000Z' });
@@ -39,6 +45,7 @@ describe('RegisterPage — inscription sur invitation', () => {
     await enterValidCode();
     expect(api.validateInvitationCode).toHaveBeenCalledWith('EKV-ABCD1234');
     await fillForm();
+    await acceptAll();
     await userEvent.click(screen.getByRole('button', { name: 'Créer mon compte' }));
 
     expect(auth.register).toHaveBeenCalledWith({
@@ -47,6 +54,9 @@ describe('RegisterPage — inscription sur invitation', () => {
       password: 'motdepasse',
       nom: 'Dilmi',
       prenom: 'Kaïs',
+      acceptPrivacyPolicy: true,
+      acceptHealthData: true,
+      confirmAgeOrParentalConsent: true,
     });
   });
 
@@ -70,6 +80,7 @@ describe('RegisterPage — inscription sur invitation', () => {
 
     await enterValidCode();
     await fillForm();
+    await acceptAll();
     await userEvent.click(screen.getByRole('button', { name: 'Créer mon compte' }));
 
     expect(await screen.findByText('Un compte existe déjà avec cet email.')).toBeInTheDocument();
@@ -91,5 +102,17 @@ describe('RegisterPage — inscription sur invitation', () => {
     render(<RegisterPage />);
 
     expect(screen.getByRole('link', { name: 'Se connecter' })).toHaveAttribute('href', '/login');
+  });
+
+  it('RGPD : accords jamais pré-cochés ; sans eux, aucun compte n\'est créé', async () => {
+    render(<RegisterPage />);
+    await enterValidCode();
+    await fillForm();
+
+    for (const box of screen.getAllByRole('checkbox')) expect(box).not.toBeChecked();
+    await userEvent.click(screen.getByRole('button', { name: 'Créer mon compte' }));
+
+    expect(auth.register).not.toHaveBeenCalled();
+    expect(screen.getByRole('link', { name: 'politique de confidentialité' })).toHaveAttribute('href', '/confidentialite');
   });
 });

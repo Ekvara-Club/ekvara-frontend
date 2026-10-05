@@ -3,6 +3,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { handleNavClick } from '../utils/navigation';
 import AuthBrandPanel from '../components/auth/AuthBrandPanel';
 import Button from '../components/ui/Button';
+import { LegalLinks } from './legal/LegalPages';
 
 function LoginPage() {
   const { login, sessionNotice } = useAuth();
@@ -91,6 +92,7 @@ function LoginPage() {
               Créer un compte
             </a>
           </p>
+          <LegalLinks className="mt-6 text-center" />
         </div>
       </div>
     </div>

@@ -5,6 +5,7 @@ import MetricsOverview from '../components/passport/MetricsOverview';
 import PalmaresList from '../components/passport/PalmaresList';
 import ConditionStatus from '../components/condition/ConditionStatus';
 import WtProfileSection from '../components/passport/WtProfileSection';
+import MyDataSection from '../components/passport/MyDataSection';
 import { useAuth } from '../contexts/AuthContext';
 import { getCompetitions, getMetricsOverview } from '../services/athletes.api';
 import type { ParticipationListItem } from '../types/activity';
@@ -13,7 +14,7 @@ import type { MetricOverviewEntry } from '../types/metrics-overview';
 function PassportPage() {
   // PassportPage n'est rendue que lorsque l'utilisateur est authentifié
   // (garde dans App.tsx) : athlete/user sont donc garantis non-null ici.
-  const { athlete, user, updateAthlete } = useAuth();
+  const { athlete, user, updateAthlete, logout } = useAuth();
   const athleteId = athlete!.id;
 
   const [participations, setParticipations] = useState<ParticipationListItem[]>([]);
@@ -126,6 +127,12 @@ function PassportPage() {
 
           <section className="border-t border-gray-200 pt-8">
             <WtProfileSection athleteId={athleteId} />
+          </section>
+
+          <section className="border-t border-gray-200 pt-8">
+            {/* Compte supprimé : le cookie est déjà effacé par le backend ;
+                logout() vide la session locale et renvoie vers /login. */}
+            <MyDataSection athleteId={athleteId} onAccountDeleted={() => logout().catch(() => undefined)} />
           </section>
         </div>
       </main>

@@ -126,6 +126,32 @@ export function unlinkWtProfile(athleteId: string): Promise<WtProfileView> {
   return wtProfileRequest(athleteId, { method: 'DELETE' });
 }
 
+// RGPD — droit d'accès : télécharge toutes les données de l'athlète (JSON).
+export async function downloadMyData(athleteId: string): Promise<void> {
+  const response = await apiFetch(`/athletes/${athleteId}/export`);
+  if (!response.ok) throw new Error(`Impossible d'exporter tes données (${response.status})`);
+  const blob = new Blob([JSON.stringify(await response.json(), null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `ekvara-mes-donnees-${new Date().toISOString().slice(0, 10)}.json`;
+  link.click();
+  URL.revokeObjectURL(url);
+}
+
+// RGPD — droit à l'effacement : suppression définitive du compte.
+export async function deleteMyAccount(athleteId: string): Promise<void> {
+  const response = await apiFetch(`/athletes/${athleteId}`, {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ confirm: 'SUPPRIMER' }),
+  });
+  if (!response.ok) {
+    const body = await response.json().catch(() => null);
+    throw new Error(typeof body?.message === 'string' ? body.message : `Impossible de supprimer ton compte (${response.status})`);
+  }
+}
+
 export async function getWeightSummary(athleteId: string): Promise<WeightSummaryResponse> {
   const response = await apiFetch(`/athletes/${athleteId}/weight-summary`);
 

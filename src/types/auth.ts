@@ -47,6 +47,10 @@ export interface RegisterPayload {
   password: string;
   nom: string;
   prenom: string;
+  // RGPD : les trois accords sont obligatoires (refus = 400 côté backend).
+  acceptPrivacyPolicy: boolean;
+  acceptHealthData: boolean;
+  confirmAgeOrParentalConsent: boolean;
 }
 
 export interface LoginPayload {

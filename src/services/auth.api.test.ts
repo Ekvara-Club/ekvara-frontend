@@ -23,7 +23,7 @@ describe('auth.api (athlète) — contexte de session', () => {
 
     await login({ email: 'a@b.fr', password: 'x' });
     expect(lastCall().url).toMatch(/\/auth\/login$/);
-    await register({ invitationCode: 'C', email: 'a@b.fr', password: 'x', nom: 'N', prenom: 'P' });
+    await register({ invitationCode: 'C', email: 'a@b.fr', password: 'x', nom: 'N', prenom: 'P', acceptPrivacyPolicy: true, acceptHealthData: true, confirmAgeOrParentalConsent: true });
     await validateInvitationCode('C');
     await getMe();
     await logout();
