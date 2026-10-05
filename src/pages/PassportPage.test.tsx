@@ -38,6 +38,7 @@ function metric(overrides: Partial<MetricOverviewEntry> = {}): MetricOverviewEnt
   return {
     id: 'm-1', code: 'temps_reaction', name: 'Temps de réaction', unit: 'ms', direction: 'lower',
     currentValue: 380, previousValue: 420, delta: -40, percentage: 9.52, status: 'improved', measuredAt: '2026-09-01T10:00:00.000Z',
+    score: null, previousScore: null,
     ...overrides,
   };
 }

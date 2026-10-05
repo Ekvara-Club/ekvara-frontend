@@ -25,6 +25,7 @@ function metric(overrides: Partial<MetricOverviewEntry> = {}): MetricOverviewEnt
   return {
     id: 'm-endurance', code: 'endurance', name: 'Endurance', unit: null, direction: 'higher',
     currentValue: null, previousValue: null, delta: null, percentage: null, status: 'unknown', measuredAt: null,
+    score: null, previousScore: null,
     ...overrides,
   };
 }

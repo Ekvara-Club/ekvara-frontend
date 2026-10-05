@@ -16,6 +16,10 @@ export interface MetricOverviewEntry {
   percentage: number | null;
   status: MetricStatus;
   measuredAt: string | null;
+  // Étoile de compétences : note /100 selon le barème de la capacité (null
+  // si non évaluée ou sans barème) — calculée par le backend uniquement.
+  score: number | null;
+  previousScore: number | null;
 }
 
 export interface MetricsOverviewResponse {

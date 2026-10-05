@@ -1,5 +1,6 @@
 import type { MetricOverviewEntry, MetricStatus } from '../../types/metrics-overview';
 import SectionLabel from '../ui/SectionLabel';
+import SkillsRadar from '../progress/SkillsRadar';
 
 interface MetricsOverviewProps {
   metrics: MetricOverviewEntry[];
@@ -79,6 +80,12 @@ function MetricsOverview({ metrics, loading, error }: MetricsOverviewProps) {
 
       {!loading && !error && metrics.length === 0 && (
         <p className="mt-4 text-sm text-ekvara-muted">Aucune capacité sportive suivie pour le moment.</p>
+      )}
+
+      {!loading && !error && metrics.length > 0 && (
+        <div className="mt-6">
+          <SkillsRadar metrics={metrics} />
+        </div>
       )}
 
       {!loading && !error && metrics.length > 0 && (

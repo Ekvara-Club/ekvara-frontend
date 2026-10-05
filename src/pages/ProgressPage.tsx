@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import Header from '../components/layout/Header';
 import MetricsLedger from '../components/progress/MetricsLedger';
+import SkillsRadar from '../components/progress/SkillsRadar';
 import MetricDetail from '../components/progress/MetricDetail';
 import MetricHistoryChart from '../components/progress/MetricHistoryChart';
 import MetricHistoryList from '../components/progress/MetricHistoryList';
@@ -95,6 +96,12 @@ function ProgressPage() {
           Ma progression
         </h1>
         <p className="mt-1 text-ekvara-muted">Suis l'évolution de tes capacités au fil de tes tests.</p>
+
+        {!overviewLoading && !overviewError && metrics.length > 0 && (
+          <div className="mt-8">
+            <SkillsRadar metrics={metrics} />
+          </div>
+        )}
 
         <div className="mt-8">
           <MetricsLedger
