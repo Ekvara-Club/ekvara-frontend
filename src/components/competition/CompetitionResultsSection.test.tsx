@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { render, screen, within } from '@testing-library/react';
+import { cleanup, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import CompetitionResultsSection from './CompetitionResultsSection';
 import type { CompetitionCategoryResults, CompetitionResultFight } from '../../types/international';
@@ -59,6 +59,10 @@ describe('CompetitionResultsSection', () => {
   });
 
   afterEach(() => {
+    // Démonter AVANT de remettre les compteurs à zéro : sinon, sous charge,
+    // un chargement encore en vol du test précédent pouvait appeler l'API
+    // après le clear et être compté dans le test suivant (« 2 appels »).
+    cleanup();
     vi.clearAllMocks();
   });
 
