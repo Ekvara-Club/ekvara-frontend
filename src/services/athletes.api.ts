@@ -18,6 +18,7 @@ import type {
 } from '../types/activity';
 import type { MetricMeasurement, MetricsOverviewResponse } from '../types/metrics-overview';
 import type { AthleteConditionView, UpdateAthleteConditionPayload } from '../types/condition';
+import type { AthleteMeasurements } from '../types/measurements';
 import type { WtProfileView } from '../types/wtLink';
 import { apiFetch } from './apiClient';
 
@@ -68,6 +69,28 @@ export async function getNextCompetition(
 
   const data: NextCompetitionResponse | null = await response.json();
   return data;
+}
+
+// Mensurations (PUT = état complet, null = non renseigné). Les messages 400
+// du backend (valeur hors bornes...) sont relayés tels quels.
+export async function updateAthleteMeasurements(athleteId: string, payload: AthleteMeasurements): Promise<AthleteMeasurements> {
+  const response = await apiFetch(`/athletes/${athleteId}/measurements`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    let message = `Impossible d'enregistrer tes mensurations (${response.status})`;
+    if (response.status === 400) {
+      const body = await response.json().catch(() => null);
+      const detail = Array.isArray(body?.message) ? body.message[0] : body?.message;
+      if (typeof detail === 'string') message = detail;
+    }
+    throw new Error(message);
+  }
+
+  return response.json();
 }
 
 // Les messages 400 du backend (date de retour passée...) sont destinés à

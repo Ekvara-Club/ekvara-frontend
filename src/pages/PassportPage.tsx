@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import Header from '../components/layout/Header';
 import AthleteProfileCard from '../components/passport/AthleteProfileCard';
+import MeasurementsSection from '../components/passport/MeasurementsSection';
 import MetricsOverview from '../components/passport/MetricsOverview';
 import PalmaresList from '../components/passport/PalmaresList';
 import ConditionStatus from '../components/condition/ConditionStatus';
@@ -113,6 +114,16 @@ function PassportPage() {
 
           <section className="border-t border-gray-200 pt-8">
             <MetricsOverview metrics={metrics} loading={metricsLoading} error={metricsError} />
+          </section>
+
+          <section className="border-t border-gray-200 pt-8">
+            {/* Mensurations déclarées par l'athlète, visibles par ses coachs. */}
+            <MeasurementsSection
+              athleteId={athleteId}
+              tailleCm={athlete!.taille_cm}
+              longueurBrasCm={athlete!.longueur_bras_cm}
+              onSaved={(view) => updateAthlete({ taille_cm: view.tailleCm, longueur_bras_cm: view.longueurBrasCm })}
+            />
           </section>
 
           <section className="border-t border-gray-200 pt-8">

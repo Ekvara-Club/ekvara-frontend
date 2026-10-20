@@ -29,6 +29,10 @@ export interface AuthMeResponse {
   grade: string | null;
   date_naissance: string | null;
   niveau_sportif: string | null;
+  // Mensurations déclarées par l'athlète (cm entiers, null = non renseigné).
+  // Optionnelles : absentes d'une session servie par un backend antérieur.
+  taille_cm?: number | null;
+  longueur_bras_cm?: number | null;
   // État de forme (colonnes athlete brutes renvoyées par /auth/me) :
   // etat_forme_retour est une date métier sérialisée en ISO minuit UTC.
   etat_forme: string;
