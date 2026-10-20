@@ -2,7 +2,6 @@ import { useState, type FormEvent } from 'react';
 import Button from '../ui/Button';
 import Modal from '../ui/Modal';
 import SectionLabel from '../ui/SectionLabel';
-import StatValue from '../ui/StatValue';
 import { updateAthleteMeasurements } from '../../services/athletes.api';
 import { ARM_LENGTH_CM, HEIGHT_CM, type AthleteMeasurements } from '../../types/measurements';
 
@@ -36,10 +35,22 @@ function MeasurementsSection({ athleteId, tailleCm, longueurBrasCm, onSaved }: M
         </button>
       </div>
 
-      <div className="mt-5 grid max-w-md grid-cols-2 gap-x-6">
-        <StatValue value={taille !== null ? `${taille}` : '—'} label="Taille (cm)" size="md" />
-        <StatValue value={bras !== null ? `${bras}` : '—'} label="Longueur de bras (cm)" size="md" />
-      </div>
+      <dl className="mt-3 flex flex-wrap gap-x-6 gap-y-1 text-sm">
+        <div className="flex items-baseline gap-1.5">
+          <dt className="text-ekvara-muted">Taille</dt>
+          <dd className="font-semibold tabular-nums text-ekvara-black">
+            <span>{taille !== null ? taille : '—'}</span>
+            {taille !== null && ' cm'}
+          </dd>
+        </div>
+        <div className="flex items-baseline gap-1.5">
+          <dt className="text-ekvara-muted">Longueur de bras</dt>
+          <dd className="font-semibold tabular-nums text-ekvara-black">
+            <span>{bras !== null ? bras : '—'}</span>
+            {bras !== null && ' cm'}
+          </dd>
+        </div>
+      </dl>
       {taille === null && bras === null && (
         <p className="mt-3 text-sm text-ekvara-muted">Non renseignées. Ton coach les verra dès que tu les ajoutes.</p>
       )}

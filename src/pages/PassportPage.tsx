@@ -113,6 +113,10 @@ function PassportPage() {
           </div>
 
           <section className="border-t border-gray-200 pt-8">
+            <MetricsOverview metrics={metrics} loading={metricsLoading} error={metricsError} />
+          </section>
+
+          <section className="border-t border-gray-200 pt-8">
             {/* Mensurations déclarées par l'athlète, visibles par ses coachs. */}
             <MeasurementsSection
               athleteId={athleteId}
@@ -120,10 +124,6 @@ function PassportPage() {
               longueurBrasCm={athlete!.longueur_bras_cm}
               onSaved={(view) => updateAthlete({ taille_cm: view.tailleCm, longueur_bras_cm: view.longueurBrasCm })}
             />
-          </section>
-
-          <section className="border-t border-gray-200 pt-8">
-            <MetricsOverview metrics={metrics} loading={metricsLoading} error={metricsError} />
           </section>
 
           <section className="border-t border-gray-200 pt-8">

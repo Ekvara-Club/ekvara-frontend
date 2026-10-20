@@ -27,7 +27,7 @@ describe('MeasurementsSection — passeport', () => {
   it('valeurs affichées en cm', () => {
     renderSection({ tailleCm: 178, longueurBrasCm: 72 });
     expect(screen.getByText('178')).toBeInTheDocument();
-    expect(screen.getByText('Taille (cm)')).toBeInTheDocument();
+    expect(screen.getByText('Taille')).toBeInTheDocument();
     expect(screen.getByText('72')).toBeInTheDocument();
     expect(screen.queryByText(/Non renseignées/)).not.toBeInTheDocument();
   });
