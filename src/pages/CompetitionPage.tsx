@@ -399,6 +399,7 @@ function CompetitionPage({ competitionId }: CompetitionPageProps) {
       competitionId={competitionId}
       categorieAge={myParticipation?.categorieAge ?? null}
       categoriePoids={myParticipation?.categoriePoids ?? null}
+      showMatchCount={!showEventResults}
     />
   );
   const eventResultsSection = showEventResults && <CompetitionResultsSection competitionId={competitionId} />;

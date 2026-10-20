@@ -3,8 +3,8 @@ import SectionLabel from '../ui/SectionLabel';
 import StatValue from '../ui/StatValue';
 import CompetitionResultFightRow from './CompetitionResultFightRow';
 import { getCompetitionCategoryResults, getCompetitionResultsSummary } from '../../services/international.api';
-import type { CompetitionCategoryResults, CompetitionResultsCategory, CompetitionResultsSummary } from '../../types/international';
-import { formatRoundHeading, splitWeightCategory } from '../../utils/wtFormat';
+import type { CompetitionCategoryResults, CompetitionResultsSummary } from '../../types/international';
+import { formatRoundHeading, groupWeightCategories } from '../../utils/wtFormat';
 
 interface CompetitionResultsSectionProps {
   competitionId: string;
@@ -23,30 +23,6 @@ function writeCategoryToUrl(category: string): void {
   const params = new URLSearchParams(window.location.search);
   params.set(CATEGORY_PARAM, category);
   window.history.replaceState(window.history.state, '', `${window.location.pathname}?${params.toString()}`);
-}
-
-interface CategoryGroup {
-  name: string | null;
-  items: { category: CompetitionResultsCategory; shortLabel: string }[];
-}
-
-// Regroupe par préfixe UNIQUEMENT les labels de forme "<Préfixe> -58kg"
-// (ordre backend conservé) ; les autres labels restent entiers, dans un
-// groupe sans titre en fin de liste. Le label stocké reste la clé.
-function groupCategories(categories: CompetitionResultsCategory[]): CategoryGroup[] {
-  const groups: CategoryGroup[] = [];
-  const others: CategoryGroup = { name: null, items: [] };
-  for (const category of categories) {
-    const parsed = splitWeightCategory(category.label);
-    if (!parsed) {
-      others.items.push({ category, shortLabel: category.label });
-      continue;
-    }
-    const last = groups[groups.length - 1];
-    if (last && last.name === parsed.group) last.items.push({ category, shortLabel: parsed.weight });
-    else groups.push({ name: parsed.group, items: [{ category, shortLabel: parsed.weight }] });
-  }
-  return others.items.length > 0 ? [...groups, others] : groups;
 }
 
 function formatCount(count: number, singular: string, plural: string): string {
@@ -154,13 +130,13 @@ function CompetitionResultsSection({ competitionId }: CompetitionResultsSectionP
           </p>
 
           <nav aria-label="Catégories" className="mt-8 space-y-4">
-            {groupCategories(summary.categories).map((group) => (
+            {groupWeightCategories(summary.categories, (c) => c.label).map((group) => (
               <div key={group.name ?? '__autres'} className="flex flex-col gap-2 sm:flex-row sm:items-baseline sm:gap-6">
                 <p className="w-24 flex-shrink-0 text-xs font-semibold uppercase tracking-wide text-ekvara-black/55">
                   {group.name ?? 'Autres'}
                 </p>
                 <div className="flex flex-wrap gap-x-5 gap-y-2">
-                  {group.items.map(({ category, shortLabel }) => {
+                  {group.items.map(({ item: category, shortLabel }) => {
                     const isSelected = category.label === selected;
                     return (
                       <button

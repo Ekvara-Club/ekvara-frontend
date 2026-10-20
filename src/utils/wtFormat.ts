@@ -98,3 +98,28 @@ export function splitWeightCategory(label: string): { group: string; weight: str
   const match = WEIGHT_CATEGORY.exec(label);
   return match ? { group: match[1], weight: `${match[2]} kg` } : null;
 }
+
+export interface WeightCategoryGroup<T> {
+  name: string | null;
+  items: { item: T; shortLabel: string }[];
+}
+
+// Regroupe par préfixe UNIQUEMENT les labels de forme "<Préfixe> -58kg"
+// (ordre d'origine conservé) ; les autres labels restent entiers, dans un
+// groupe sans titre en fin de liste. Le label d'origine reste la clé.
+export function groupWeightCategories<T>(items: T[], labelOf: (item: T) => string): WeightCategoryGroup<T>[] {
+  const groups: WeightCategoryGroup<T>[] = [];
+  const others: WeightCategoryGroup<T> = { name: null, items: [] };
+  for (const item of items) {
+    const label = labelOf(item);
+    const parsed = splitWeightCategory(label);
+    if (!parsed) {
+      others.items.push({ item, shortLabel: label });
+      continue;
+    }
+    const last = groups[groups.length - 1];
+    if (last && last.name === parsed.group) last.items.push({ item, shortLabel: parsed.weight });
+    else groups.push({ name: parsed.group, items: [{ item, shortLabel: parsed.weight }] });
+  }
+  return others.items.length > 0 ? [...groups, others] : groups;
+}
